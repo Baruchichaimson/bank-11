@@ -1,4 +1,9 @@
 #include <stdio.h>
+/******************************* 
+author:Baruch Haimson
+reviewer:Tal Hindi
+stauts:        
+*******************************/
 
 void swap(int* a, int* b)
 {

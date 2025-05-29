@@ -1,4 +1,9 @@
 #include <stdio.h>
+/******************************* 
+author:Baruch Haimson
+reviewer:Tal Hindi
+stauts:        
+*******************************/
 
 double pow10(int n)
 {
@@ -21,6 +26,7 @@ double pow10(int n)
 int main()
 {
     printf("%f\n", pow10(5));  
-    printf("%f\n", pow10(-3));  
+    printf("%f\n", pow10(-3));
+    printf("%f\n", pow10(0));  
     return 0;
 }
