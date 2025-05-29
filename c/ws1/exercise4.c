@@ -1,16 +1,26 @@
 #include <stdio.h>
 
-int pow10(int n)
+double pow10(int n)
 {
-	int result = 1;
-	for (int i = 0; i < n; i++)
-	{
-		result *= 10;
-	}
-	return result;
+    double result = 1.0;
+    int abs_n = n < 0 ? -n : n;
+
+    for (int i = 0; i < abs_n; i++)
+    {
+        result *= 10.0;
+    }
+
+    if (n < 0)
+    {
+        return 1.0 / result;
+    }
+
+    return result;
 }
+
 int main()
 {
-	printf("%d\n", pow10(5));
-	return 0;
+    printf("%f\n", pow10(5));  
+    printf("%f\n", pow10(-3));  
+    return 0;
 }
