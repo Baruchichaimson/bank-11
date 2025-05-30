@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "strings1.h"
+#include <assert.h>
 
 size_t StrLen (const char* str)
 {
@@ -18,13 +19,9 @@ size_t StrLen (const char* str)
 int main()
 {
     const char* Nullable = NULL;
-    printf("the length of the string is: %zu \n", StrLen("baruch haimson"));
-    printf("the length of the string is: %zu \n", StrLen(""));
-    size_t len = StrLen(Nullable);
-    if (len == 0 && Nullable == NULL)
-        printf("The string is not good!\n");
-    else
-        printf("the length of the string is: %zu \n", len);
+    assert(StrLen("baruch haimson") == 14);
+    assert(StrLen("") == 0);
+    assert(StrLen(Nullable) == 0);
+    printf("All the test passed successfully!\n");
     return 0;
 }
-

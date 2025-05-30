@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "strings2.h"
+#include <assert.h>
 
 int StrCmp (char string1[], char string2[])
 {
@@ -24,9 +25,11 @@ int main()
     char* s3 = "baruch iaimson";
     char* s4 = "baruch aimson";
 
-    printf("Compare s1 to s2: %d\n", StrCmp(s1, s2)); // 0
-    printf("Compare s1 to s3: %d\n", StrCmp(s1, s3)); // -1
-    printf("Compare s1 to s4: %d\n", StrCmp(s1, s4)); // 1
+    assert(StrCmp(s1, s2) == 0);
+    assert(StrCmp(s1, s3) == -1); 
+    assert(StrCmp(s1, s4) == 1);   
+
+    printf("All StrCmp tests passed successfully!\n");
 
     return 0;
 }
