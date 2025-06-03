@@ -2,11 +2,24 @@
 #include <stdlib.h>
 #include <stddef.h>
 
-void SwapSizeTPointers(size_t** a, size_t** b)
+/***************************
+author:Baruch Haimson
+reviewer:Tal Hindi
+status:approved
+
+***************************/
+
+void SwapSizeT(size_t* a, size_t* b)
 {
-    size_t* temp = *a;
+    size_t temp = *a;
     *a = *b;
     *b = temp;
+}
+
+
+void SwapSizeTPointers(size_t** a, size_t** b)
+{
+    SwapSizeT((size_t*) a, (size_t*) b);
 }
 
 int main ()
@@ -16,11 +29,13 @@ int main ()
          size_t* px = &x;
          size_t* py = &y;
          printf("Before swap:\n");
-         printf("px points to: %zu\n", *px);
-         printf("py points to: %zu\n", *py);
-         SwapSizeTPointers(&px, &py);
-         printf("After swap:\n");
-         printf("px points to: %zu\n", *px);
-         printf("py points to: %zu\n", *py);
+    	 printf("px points to: %lu\n", (unsigned long)*px);
+    	 printf("py points to: %lu\n", (unsigned long)*py);
+
+    	 SwapSizeTPointers(&px, &py);
+
+    	 printf("After swap:\n");
+    	 printf("px points to: %lu\n", (unsigned long)*px);
+    	 printf("py points to: %lu\n", (unsigned long)*py);
          return 0;
 }

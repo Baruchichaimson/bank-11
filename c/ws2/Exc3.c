@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/***************************
+author:Baruch Haimson
+reviewer:Tal Hindi
+status:approved
+
+***************************/
+
 int main ()
 {
     static int s_i = 7;
@@ -19,6 +26,9 @@ int main ()
     {
         int** ptr3 = &ptr;
         printf("Address of ptr3 (on stack inside block): %p\n", (void*)&ptr3);
+	printf("Value of ptr3 (address of ptr): %p\n", (void*)ptr3);
+	printf("Value of ptr3 (address of i): %p\n", (void*)*ptr3);
+	printf("Value of **ptr3 (value of i): %d\n", **ptr3);
     }
 
     free(ptr2);
