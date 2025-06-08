@@ -5,8 +5,8 @@
  Exercise:  WS3
  Date: 	    05/08/25
  Developer: Baruch Haimson
- Reviewer:  
- Status:    Approved
+ Reviewer:  daniel
+ Status:    Approved ; suggestion - delete return -1, dont have to use malloc/ or check succession
 ***************************/
 int josephus_array(int n) 
 {
