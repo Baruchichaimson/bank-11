@@ -1,6 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/***************************
+ Exercise:  WS4
+ Date: 	    05/09/25
+ Developer: Baruch Haimson
+ Reviewer:  Daniel
+ Status:    Approved
+***************************/
+
 void HandleKeySwitch(char c)
 {
     switch (c)
@@ -13,7 +21,6 @@ void HandleKeySwitch(char c)
                 break;
         case 27:  
         	system("stty icanon echo");
-        	printf("Exiting program...\n"); 
         	exit(0);
     }
 }

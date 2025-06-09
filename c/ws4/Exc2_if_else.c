@@ -1,6 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/***************************
+ Exercise:  WS4
+ Date: 	    05/09/25
+ Developer: Baruch Haimson
+ Reviewer:  Daniel
+ Status:    Approved
+***************************/
+
 void HandleKeyIfElse(char c)
 {
     if (c == 'A')
@@ -10,7 +18,6 @@ void HandleKeyIfElse(char c)
     else if (c == 27) 
     {
         system("stty icanon echo");
-        printf("Exiting program...\n"); 
         exit(0);
     }
 }
