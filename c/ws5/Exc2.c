@@ -4,51 +4,54 @@
 
 #define SIZE 100
 
-enum operations {ADD, REMOVE, COUNT , PREFIX, EXIT};
+enum operations {CORRECT , ERROR};
 
 struct CommandHandler
 {
     char* keyword;
     int (*match)(const char*);
-    void (*action)(const char*, const char*);
+    enum operations (*action)(const char*, const char*);
 };
 
 /***************************************
 actions functions
 ***************************************/
-void action_add(const char* filename, const char* input) 
+enum operations action_add(const char* filename, const char* input) 
 {
     FILE* f = fopen(filename, "a");
     if (!f) 
     {
-    	perror("Error opening file");
-    	return;
+    	perror("Error opening file for add");
+    	return ERROR;
     }
 
     fprintf(f, "%s\n", input);
     fclose(f);
+    return CORRECT;
 }
-void action_remove(const char* filename, const char* input) 
+enum operations action_remove(const char* filename, const char* input) 
 {
     if (remove(filename) == 0)
     {
         printf("File deleted.\n");
+        return CORRECT;
     }
     else
     {
         perror("Failed to delete file");
+        return ERROR;
     }
 }
 
-void action_count(const char* filename, const char* input) 
+enum operations action_count(const char* filename, const char* input) 
 {
    int lines = 0;
    char line[SIZE];
    FILE* f = fopen(filename, "r");
    if (!f) 
    {
-    	perror("Error opening file");
-    	return;
+    	perror("Error opening file for count");
+    	return ERROR;
    }
    
    while (fgets(line, sizeof(line), f) != NULL) 
@@ -58,9 +61,10 @@ void action_count(const char* filename, const char* input)
     
    fclose(f);
    printf("Total lines in file: %d\n", lines);
+   return CORRECT;
 }
 
-void action_prefix(const char* filename, const char* input) 
+enum operations action_prefix(const char* filename, const char* input) 
 {
     FILE* f = fopen(filename, "r");
     char existing_content[10000] = "";
@@ -76,7 +80,7 @@ void action_prefix(const char* filename, const char* input)
     f = fopen(filename, "w");
     if (!f) {
         perror("Error opening file for writing");
-        return;
+        return ERROR;
     }
     
     fprintf(f, "%s\n", input + 1); 
@@ -85,12 +89,14 @@ void action_prefix(const char* filename, const char* input)
     
     fclose(f);
     printf("Added prefix line: %s\n", input + 1);
+    return CORRECT;
 }
 
-void action_exit() 
+enum operations action_exit() 
 {
     printf("Exiting...\n");
     exit(0);
+    return CORRECT;
 }
 
 /***************************************
@@ -135,7 +141,7 @@ int main(int argc, char* argv[])
 	{"-exit", match_exit, action_exit},
     };
     
-    printf("Logger running. Enter string:\n");
+    printf("Logger running... Enter string:\n");
 
     while (1) 
     {
@@ -153,7 +159,11 @@ int main(int argc, char* argv[])
         {
             if(handlers[i].match(buffer)) 
             {
-                handlers[i].action(filename, buffer);
+        	enum operations result = handlers[i].action(filename, buffer);
+                if (result == ERROR) 
+                {
+        		fprintf(stderr, "Command failed: %s\n", buffer);
+    		}
                 handled = 1;
                 break;
             }
