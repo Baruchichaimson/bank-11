@@ -4,7 +4,7 @@
 
 #define SIZE 100
 
-enum status {CORRECT , ERROR , EXIT};
+enum status {CORRECT_ADD , CORRECT_REMOVE, CORRECT_COUNT, CORRECT_PREFIX, ERROR_OPEN, ERROR_CLOSE, ERROR_REMOVE, EXIT};
 
 struct CommandHandler
 {
@@ -21,25 +21,28 @@ enum status action_add(const char* filename, const char* input)
     FILE* f = fopen(filename, "a");
     if (!f) 
     {
-    	perror("Error opening file for add");
-    	return ERROR;
+    	return ERROR_OPEN;
     }
 
     fprintf(f, "%s\n", input);
+    
     fclose(f);
-    return CORRECT;
+    if (f) 
+    {
+    	return ERROR_CLOSE;
+    }
+
+    return CORRECT_ADD;
 }
 enum status action_remove(const char* filename, const char* input) 
 {
     if (remove(filename) == 0)
     {
-        printf("File deleted.\n");
-        return CORRECT;
+        return CORRECT_REMOVE;
     }
     else
     {
-        perror("Failed to delete file");
-        return ERROR;
+        return ERROR_REMOVE;
     }
 }
 
@@ -50,8 +53,7 @@ enum status action_count(const char* filename, const char* input)
    FILE* f = fopen(filename, "r");
    if (!f) 
    {
-    	perror("Error opening file for count");
-    	return ERROR;
+    	return ERROR_OPEN;
    }
    
    while (fgets(line, sizeof(line), f) != NULL) 
@@ -60,8 +62,12 @@ enum status action_count(const char* filename, const char* input)
    } 
     
    fclose(f);
-   printf("Total lines in file: %d\n", lines);
-   return CORRECT;
+   if (f) 
+   {
+    	return ERROR_CLOSE;
+   }
+    
+   return CORRECT_COUNT;
 }
 
 enum status action_prefix(const char* filename, const char* input) 
@@ -80,23 +86,25 @@ enum status action_prefix(const char* filename, const char* input)
     }
     
     f = fopen(filename, "w");
-    if (!f) {
-        perror("Error opening file for writing");
-        return ERROR;
+    if (!f) 
+    {
+        return ERROR_OPEN;
     }
     
-    fprintf(f, "%s\n", input + 1); 
-    
+    fprintf(f, "%s\n", input + 1); /* for skip the '<' */
     fprintf(f, "%s", existing_content);
     
     fclose(f);
-    printf("Added prefix line: %s\n", input + 1);
-    return CORRECT;
+    if (f) 
+    {
+    	return ERROR_CLOSE;
+    }
+    
+    return CORRECT_PREFIX;
 }
 
 enum status action_exit() 
 {
-    printf("Exiting...\n");
     return EXIT;
 }
 
@@ -174,12 +182,28 @@ int main(int argc, char* argv[])
         }
 	switch (result)
 	{
-		case ERROR:
-			fprintf(stderr, "Action failed. Please try again.\n");
-			break;
 		case EXIT:
+			printf("Exiting...\n");
 			exit(0);
-		case CORRECT:
+		case CORRECT_ADD:
+			break;
+		case CORRECT_REMOVE:
+			printf("File deleted.\n");
+			break;
+		case CORRECT_COUNT:
+			printf("Total lines in file: %d\n", lines);
+			break;
+		case CORRECT_PREFIX:
+			printf("Added prefix line: %s\n", input + 1);
+			break;
+		case ERROR_REMOVE:
+			perror("Failed to delete file");
+			break;
+		case ERROR_OPEN:
+			perror("Error opening file for count");
+			break;
+		case ERROR_CLOSE:
+			perror("Error closing file");
 			break;
 	}
     }
