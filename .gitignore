@@ -3,7 +3,7 @@
 !**/
 !.gitignore
 !.myfuncs
-!.pdf
+!*.pdf
 !**/*.c
 !new.txt
 !**/*.h
