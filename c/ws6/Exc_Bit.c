@@ -1,5 +1,14 @@
 #include <stdio.h>
+#include <stdint.h>
 #include "Exc_Bit.h"
+
+
+union 
+{
+     float f;
+     uint32_t bits;
+} float_union;
+
 
 long pow2(int x, int y)
 {
@@ -63,25 +72,24 @@ void PrintWithThreeBits(int* arr, size_t size)
         }
     }
 }
-unsigned int ByteMirrorLoop(unsigned int n)
+unsigned char ByteMirrorLoop(unsigned char n)
 {
-	unsigned int result = 0;
-    for (int i = 0; i < 32; ++i)
+	size_t i = 0;
+	unsigned char result = 0;
+    for (i = 0; i < 8; ++i)
     {
         result <<= 1;
         result |= (n & 1);
         n >>= 1;
     }
-    return 1;
+    return result;
 	
 }
-unsigned int ByteMirror(unsigned int n)
+unsigned char ByteMirror(unsigned char n)
 {
 	n = (((n >> 1) & 0x55555555) | (n & 0x55555555) << 1);
 	n = (((n >> 2) & 0x33333333) | (n & 0x33333333) << 2);
 	n = (((n >> 4) & 0x0F0F0F0F) | (n & 0x0F0F0F0F) << 4);
-	n = (((n >> 8) & 0x00FF0FF) | (n & 0x00FF00FF) << 8);
-	n = (n >> 16) | (n << 16); 
 	return n;
 }
 
@@ -115,6 +123,56 @@ void SwapInPlace(unsigned int x, unsigned int y)
 	printf("%d - %d\n", x, y);
 	/* not work for the same numbers and for float numbers */
 }
-CountBits()
+int CountBitsLoop(int n)
+{
+	int count  = 0;
+	while (n > 0)
+    {
+        if (n & 1)
+        {
+            count++;
+        }
+        n >>= 1;
+    }
+    return count;
+}
+
+int CountBits(int n)
+{
+	static size_t LUT_count[256];
+	static int was_init = 0;
+	size_t i = 0;
+	size_t count_bits = 0;
+	
+	if(!was_init)
+	{
+		for (i = 0; i <256; ++i)
+		{
+			LUT_count[i] = CountBitsLoop(i);
+		}
+		was_init = 1;
+	}
+	
+	for ( i = 0; i < sizeof(int); ++i)
+	{
+		count_bits += LUT_count[n & 0xFF];
+		n = n>>8;
+	}
+	return count_bits;
+
+}
+
+void PrintFloatBits(float n) 
+{
+	float_union.f = n;
+
+    printf("Bits: ");
+    for (int i = 31; i >= 0; i--) {
+        printf("%d", (float_union.bits >> i) & 1);
+        if (i % 8 == 0) printf(" ");
+    }
+    printf("\n");
+
+}
 
 

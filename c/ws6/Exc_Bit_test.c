@@ -27,13 +27,19 @@ int main()
 
     printf("**********printWithThreeBits************\n");
     PrintWithThreeBits(arr, 7);
-    printf("**********MirrorByte************\n");
+    
+    printf("**********MirrorByteLoop************\n");
     printf("%d\n", ByteMirrorLoop(6));
+    printf("%d\n", ByteMirrorLoop(13));
+    
+    printf("**********MirrorByte************\n");
 	printf("%d\n", ByteMirror(6));
+	printf("%d\n", ByteMirror(13));
 	
 	printf("**********2nd -and- 6nd************\n");
 	printf("%d\n", Checks2and6(34));
 	printf("%d\n", Checks2and6(4));
+	
 	printf("**********2nd -or- 6nd************\n");
 	printf("%d\n", Checks2or6(32));
 	printf("%d\n", Checks2or6(2));
@@ -43,18 +49,34 @@ int main()
 	printf("%d\n", Swap3and5(16));
 	printf("%d\n", Swap3and5(0));
 	printf("%d\n", Swap3and5(55));	
+	
 	printf("**********RoundDownTo16************\n");
 	printf("%d\n" , RoundDownTo16(5));
 	printf("%d\n" , RoundDownTo16(16));
 	printf("%d\n" , RoundDownTo16(32));
 	printf("%d\n" , RoundDownTo16(80));
+	
 	printf("**********SwapInPlace************\n");
 	SwapInPlace(3, 5);
 	SwapInPlace(3.6, 5.4);
 	SwapInPlace(3.1, 5.2);
 	SwapInPlace(5, 5);
 	SwapInPlace(4, -5);
-	SwapInPlace(1.0, -1.1);
+	SwapInPlace(1.0, -1);
+	
+	printf("**********CountBitsLoop************\n");
+	printf("%d\n", CountBitsLoop(6));
+	printf("%d\n", CountBitsLoop(13));
+	
+	printf("**********CountBits************\n");
+	printf("%d\n", CountBits(6));
+	printf("%d\n", CountBits(13));
+	
+	printf("**********PrintFloatBits************\n");
+	PrintFloatBits(3.16);
+	PrintFloatBits(3.75);
+	PrintFloatBits(5.40);
+	
     return 0;
 }
 
