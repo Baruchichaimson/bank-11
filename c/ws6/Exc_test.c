@@ -1,6 +1,14 @@
 #include <stdio.h>
 #include "Exc.h"
 
+/***************************
+ Exercise:  WS6
+ Date: 	    12/06/25
+ Developer: Baruch Haimson
+ Reviewer:  
+ Status:    Approved
+***************************/
+
 int main()
 {
     int arr[7] = {5, 7, 12, 13, 14, 15, 8};

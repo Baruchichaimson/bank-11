@@ -2,25 +2,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include "Exc1.h"
 
-/*typedef enum 
-{
-    TYPE_INT,
-    TYPE_STRING,
-    TYPE_FLOAT
-} DataType;*/
-
-typedef void (*AddFunc)(void* value);
-typedef void (*PrintFunc)(void* value);
-typedef void (*ClearFunc)(void* value);
-
-typedef struct 
-{
-    AddFunc add;
-    PrintFunc print;
-    ClearFunc clear;
-    void* value;
-} Operator;
+/***************************
+ Exercise:  WS8
+ Date: 	    17/06/25
+ Developer: Baruch Haimson
+ Reviewer:  
+ Status:    
+***************************/
 
 
 /*****ADD-FUNCTIONS*********/
@@ -34,7 +24,16 @@ void AddFloat(void* value)
 }
 void AddString(void* value)   
 { 
-	strcat((char*)value, " append"); 
+	char** p_str = (char**)value;
+    char* str = *p_str;
+    const char* to_add = " append";
+    
+    size_t new_len = strlen(str) + strlen(to_add) + 1;
+    char* new_str = realloc(str, new_len);
+    assert(new_str != NULL);
+    
+    strcat(new_str, to_add);
+    *p_str = new_str;
 }
 
 
@@ -49,7 +48,7 @@ void PrintFloat(void* value)
 }
 void PrintString(void* value) 
 { 
-	printf("String: %s\n", (char*)value); 
+    printf("String: %s\n", *(char**)value); 
 }
 
 
@@ -64,60 +63,81 @@ void ClearFloat(void* value)
 }
 void ClearString(void* value) 
 { 
-	((char*)value)[0] = '\0';
+    (*(char**)value)[0] = '\0';
 }
 
-int main()
+
+/*****INIT-FUNCTIONS*********/
+void InitInt(Operator* element, int value)
+{
+    element->add = AddInt;
+    element->print = PrintInt;
+    element->clear = ClearInt;
+    *(int*)&element->value = value;
+}
+
+void InitFloat(Operator* element, float value)
+{
+    element->add = AddFloat;
+    element->print = PrintFloat;
+    element->clear = ClearFloat;
+    *(float*)&element->value = value;
+}
+
+void InitStr(Operator* element, const char* str)
+{
+    char* p = (char*)malloc(strlen(str) + 1);
+    assert(p != NULL);
+    strcpy(p, str);
+    
+    char** holder = (char**)malloc(sizeof(char*)); 
+    assert(holder != NULL);
+    *holder = p;
+
+    element->add = AddString;
+    element->print = PrintString;
+    element->clear = ClearString;
+    element->value = holder;
+}
+
+
+/*****PRINTALL & ADDALL & FREEALL FUNCTIONS*********/
+void printAll(Operator* element, size_t size)
 {
 	size_t i;
-	size_t SizeOps;
-    int i1 = 7, i2 = 15;
-    float f1 = 3.14f, f2 = 2.71f;
-    char* c1;
-    char* c2;
-    
-    c1 = (char*)malloc(100 * sizeof(char));
-    assert(c1 != NULL);
-    strcpy(c1, "haimson");
+    for (i = 0; i < size; ++i)
+    {
+        element[i].print(element[i].value);
+    }
+}
 
-    c2 = (char*)malloc(100 * sizeof(char));
-    assert(c2 != NULL);
-    strcpy(c2, "baruchi");
+void addAll(Operator* element, size_t size)
+{
+	size_t i;
+    for (i = 0; i < size; ++i)
+    {
+        element[i].add(element[i].value);
+    }
+}
 
-
-    Operator ops[] = {
-        { AddInt,    PrintInt,    ClearInt,    &i1 },
-        { AddInt,    PrintInt,    ClearInt,    &i2 },
-        { AddFloat,  PrintFloat,  ClearFloat,  &f1 },
-        { AddFloat,  PrintFloat,  ClearFloat,  &f2 },
-        { AddString, PrintString, ClearString, c1 },
-        { AddString, PrintString, ClearString, c2 }
-    };
-
-    SizeOps = sizeof(ops) / sizeof(ops[0]);
-
-    printf("=== Before ADD ===\n");
-    
-    for(i = 0; i < SizeOps; ++i)
-        ops[i].print(ops[i].value);
-
-    printf("\n=== After Add ===\n");
-    
-    for(i = 0; i < SizeOps; ++i)
-        ops[i].add(ops[i].value);
-    for(size_t i = 0; i < SizeOps; ++i)
-        ops[i].print(ops[i].value);
-
-    printf("\n=== After Clear ===\n");
-    
-    for(i = 0; i < SizeOps; ++i)
-        ops[i].clear(ops[i].value);
-    for(i = 0; i < SizeOps; ++i)
-        ops[i].print(ops[i].value);
-        
-    free(c1);
-    free(c2);
-
-    return 0;
+void clearAll(Operator* element, size_t size)
+{
+	size_t i;
+    for (i = 0; i < size; ++i)
+    {
+        element[i].clear(element[i].value);
+    }
+}
+void freeAll(Operator* element, size_t size)
+{
+    size_t i;
+    for (i = 0; i < size; ++i)
+    {
+        if (element[i].clear == ClearString)
+        {
+            free(*(char**)element[i].value);  
+            free(element[i].value);           
+        }
+    }
 }
 

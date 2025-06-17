@@ -1,6 +1,14 @@
 #ifndef __EXC_H__
 #define __EXC_H__
 
+/***************************
+ Exercise:  WS6
+ Date: 	    12/06/25
+ Developer: Baruch Haimson
+ Reviewer:  
+ Status:    Approved
+***************************/
+
 #include <stddef.h>
 
 long pow2(int x, int y);

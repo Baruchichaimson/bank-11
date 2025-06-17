@@ -2,6 +2,13 @@
 #include <stdint.h>
 #include "Exc.h"
 
+/***************************
+ Exercise:  WS6
+ Date: 	    12/06/25
+ Developer: Baruch Haimson
+ Reviewer:  
+ Status:    Approved
+***************************/
 
 union 
 {
