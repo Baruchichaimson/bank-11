@@ -1,5 +1,14 @@
 #include <stdio.h>
 
+/***************************
+ Exercise:  WS8
+ Date: 	    17/06/25
+ Developer: Baruch Haimson
+ Reviewer:  
+ Status:    
+***************************/
+
+
 #define SIZEOF_VAR(x) ((char*)(&x + 1) - (char*)(&x))
 /* casting to char* because we want to count how much byte wh have ((char*) = 1 byte) */
 

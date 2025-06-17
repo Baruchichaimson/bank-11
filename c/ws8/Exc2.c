@@ -1,5 +1,13 @@
 #include <stdio.h>
 
+/***************************
+ Exercise:  WS8
+ Date: 	    17/06/25
+ Developer: Baruch Haimson
+ Reviewer:  
+ Status:    
+***************************/
+
 #define MAX2(a, b) ((a) > (b) ? (a) : (b))
 #define MAX3(a, b, c) (MAX2(MAX2(a, b), c))
 

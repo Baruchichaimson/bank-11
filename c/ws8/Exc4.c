@@ -1,5 +1,14 @@
 #include <stdio.h>
 
+/***************************
+ Exercise:  WS8
+ Date: 	    17/06/25
+ Developer: Baruch Haimson
+ Reviewer:  
+ Status:    
+***************************/
+
+
 #define SIZEOF_TYPE(type) ((char*)(((type*)0) + 1) - (char*)((type*)0))
 /* (type*)0 => to show as what is the size of the type from address 0 */
 
