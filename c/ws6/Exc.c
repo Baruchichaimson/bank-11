@@ -144,28 +144,34 @@ int CountBitsLoop(int n)
     return count;
 }
 
+static void InitCountBitLUT(size_t LUT_count[256])
+{
+	
+	size_t i = 0;
+	for (i = 0; i <256; ++i)
+	{
+			LUT_count[i] = CountBitsLoop(i);
+	}
+}
+
 int CountBits(int n)
 {
 	static size_t LUT_count[256];
 	static int was_init = 0;
-	size_t i = 0;
-	size_t count_bits = 0;
 	
 	if(!was_init)
 	{
-		for (i = 0; i <256; ++i)
-		{
-			LUT_count[i] = CountBitsLoop(i);
-		}
+		InitCountBitLUT(LUT_count);
 		was_init = 1;
 	}
 	
-	for ( i = 0; i < sizeof(int); ++i)
-	{
-		count_bits += LUT_count[n & 0xFF];
-		n = n>>8;
-	}
-	return count_bits;
+	return (
+		LUT_count[n & 0xff] + 
+		LUT_count[(n >> 8) & 0xff] + 
+    	LUT_count[(n >> 16) & 0xff] + 
+    	LUT_count[n >> 24]
+    ); 
+
 
 }
 
@@ -185,5 +191,8 @@ void PrintFloatBits(float n)
     printf("\n");
 
 }
+
+
+
 
 

@@ -84,6 +84,7 @@ int main()
 	PrintFloatBits(3.16);
 	PrintFloatBits(3.75);
 	PrintFloatBits(5.40);
+	PrintFloatBits(7.40);
 	
     return 0;
 }
