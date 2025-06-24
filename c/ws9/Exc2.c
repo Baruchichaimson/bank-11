@@ -192,6 +192,7 @@ int AtoiBase(const char *str, int base)
 
 void PrintUniqueChars(const char* a, const char* b, const char* c)
 {
+	size_t i = 0;
     int in_a[256] = {0}, in_b[256] = {0}, in_c[256] = {0};
 
     while (*a)
@@ -210,7 +211,7 @@ void PrintUniqueChars(const char* a, const char* b, const char* c)
 		 ++c;
     }
 
-    for (int i = 0; i < 256; ++i)
+    for (i = 0; i < 256; ++i)
     {
         if (in_a[i] && in_b[i] && !in_c[i])
             putchar(i);

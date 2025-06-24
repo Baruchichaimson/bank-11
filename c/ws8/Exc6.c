@@ -29,7 +29,7 @@ typedef struct {
 
 #pragma pack(pop) /* release the define that dont do a padding */
 
-void save_student_to_file(const char* filename, const Student* s)
+void saveStudentToFile(const char* filename, const Student* s)
 {
     FILE* f = fopen(filename, "wb");
     if (!f)
@@ -41,7 +41,7 @@ void save_student_to_file(const char* filename, const Student* s)
     fclose(f);
 }
 
-void load_student_from_file(const char* filename, Student* s)
+void loadStudentFromFile(const char* filename, Student* s)
 {
     FILE* f = fopen(filename, "rb");
     if (!f)
@@ -53,7 +53,7 @@ void load_student_from_file(const char* filename, Student* s)
     fclose(f);
 }
 
-void print_student(const Student* s)
+void printStudent(const Student* s)
 {
     printf("Student: %s %s\n", s->first_name, s->last_name);
     printf("Humanistic Grades:\n");
@@ -78,16 +78,17 @@ int main()
             92.0               
         }
     };
-
+	Student loaded;
     const char* filename = "student.bin";
-    save_student_to_file(filename, &original);
-    Student loaded;
-    load_student_from_file(filename, &loaded);
+    
+    saveStudentToFile(filename, &original);
+    
+    loadStudentFromFile(filename, &loaded);
 
     printf("Original Student:\n");
-    print_student(&original);
+    printStudent(&original);
     printf("\nLoaded Student:\n");
-    print_student(&loaded);
+    printStudent(&loaded);
 
     return 0;
 }

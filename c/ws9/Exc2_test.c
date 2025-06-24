@@ -2,7 +2,8 @@
 #include <string.h>
 #include "Exc2.h"
 
-#define IS_LITTLE_ENDIAN()  (*(char*)&(int){1} == 1)
+static int num = 1
+#define IS_LITTLE_ENDIAN()  (*(char*)&num == 1)
 
 void TestAtoi(const char* str)
 {
