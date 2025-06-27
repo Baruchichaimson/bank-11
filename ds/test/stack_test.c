@@ -3,18 +3,26 @@
 #include <string.h>
 #include "../include/stack.h"
 
+/***************************
+ Exercise:  stack
+ Date: 	    27/06/25
+ Developer: Baruch Haimson
+ Reviewer:  Bar
+ Status:    
+***************************/
+
 void TestCreate()
 {
     printf("=== Test: StackCreate ===\n");
 
     stack_t *s1 = StackCreate(0, sizeof(int));
-    printf("Test: Create with capacity 0 | Expected: != NULL | Actual: %s\n", s1 ? "!= NULL" : "NULL");
+    printf("Test: Create with capacity 0 ( Expected: != NULL | Actual: %s\n", s1 ? "!= NULL)" : "NULL)");
 
     stack_t *s2 = StackCreate(1, sizeof(int));
-    printf("Test: Create with capacity 1 | Expected: != NULL | Actual: %s\n", s2 ? "!= NULL" : "NULL");
+    printf("Test: Create with capacity 1 ( Expected: != NULL | Actual: %s\n", s2 ? "!= NULL)" : "NULL)");
 
     stack_t *s3 = StackCreate(1000, sizeof(double));
-    printf("Test: Create with capacity 1000 | Expected: != NULL | Actual: %s\n", s3 ? "!= NULL" : "NULL");
+    printf("Test: Create with capacity 1000 ( Expected: != NULL | Actual: %s\n", s3 ? "!= NULL)" : "NULL)");
 
     StackDestroy(s1);
     StackDestroy(s2);
@@ -24,13 +32,7 @@ void TestCreate()
 void TestDestroy()
 {
     printf("\n=== Test: StackDestroy ===\n");
-
-    // Case 1: Destroy immediately after creation
-    stack_t *s1 = StackCreate(2, sizeof(int));
-    printf("Test: Destroy after empty creation | Expected: destroyed\n");
-    StackDestroy(s1);
-    printf("-> Success: No crash.\n");
-
+/*======================================test 1===================================*/
     stack_t *s2 = StackCreate(3, sizeof(int));
     int a = 42, b = 84;
 
@@ -42,11 +44,18 @@ void TestDestroy()
 
     printf("Test: Destroy after usage | Expected: destroyed\n");
     StackDestroy(s2);
-    printf("-> Success: No crash.\n");
-
+    printf("destroyed Success\n");
+/*======================================test 2===================================*/
+    stack_t *s1 = StackCreate(2, sizeof(int));
+    printf("Test: Destroy after empty creation | Expected: destroyed\n");
+    StackDestroy(s1);
+    printf("destroyed Success\n");
+    
+/*======================================test 3===================================*/
     stack_t *s3 = StackCreate(1, sizeof(double));
+    printf("Test: Destroy single-element stack | Expected: destroyed\n");
     StackDestroy(s3);
-    printf("Test: Destroy single-element stack | Expected: destroyed | Actual: destroyed.\n");
+    printf("destroyed Success\n");
 }
 
 
@@ -87,8 +96,8 @@ void TestPop()
     printf("Test: Pop twice | Expected top: 10 | Actual: %d\n", *(int *)StackPeek(s));
 
     StackPop(s);
-    printf("Test: Pop all | Expected IsEmpty: 1 | Actual: %d\n", StackIsEmpty(s));
-
+    printf("Test: Pop third | Expected top: pop will be empty");
+	printf("Size after pop everything: %lu\n", StackSize(s)); 
     StackDestroy(s);
 }
 

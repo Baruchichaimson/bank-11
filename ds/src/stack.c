@@ -3,6 +3,15 @@
 #include <assert.h>
 #include "../include/stack.h"
 
+/***************************
+ Exercise:  stack
+ Date: 	    27/06/25
+ Developer: Baruch Haimson
+ Reviewer:  Bar
+ Status:    
+***************************/
+
+
 struct Stack
 {
     size_t size;
