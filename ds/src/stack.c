@@ -53,18 +53,20 @@ void StackPush(stack_t* stack, const void* element)
 {
     assert(stack);
     assert(element);
-    assert(stack->size < stack->capacity);
-    
-    memcpy (stack->elements + (stack->size * stack->element_size), element, stack->element_size);
-    ++stack->size;
+    if (stack->size < stack->capacity)
+    {
+    	memcpy (stack->elements + (stack->size * stack->element_size), element, stack->element_size);
+    	++stack->size;
+    }
 }
 
 void StackPop(stack_t* stack)
 {
     assert(stack);
-    assert(stack->size > 0);
-
-    --stack->size;
+    if (!StackIsEmpty(stack))
+	{
+    	--stack->size;
+    }
 }
 
 void* StackPeek(const stack_t* stack)
