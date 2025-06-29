@@ -9,3 +9,4 @@
 !**/*.h
 !*.mak
 !**/makefile
+!Makefile
