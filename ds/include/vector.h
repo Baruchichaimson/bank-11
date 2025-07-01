@@ -3,6 +3,15 @@
 
 #include <stddef.h> /* for size_t */
 
+/***************************
+ Exercise:  stack
+ Date: 	    01/07/25
+ Developer: Baruch Haimson
+ Reviewer:  avi
+ Status:    Approved
+***************************/
+
+
 #define DEFAULT_CAPACITY (8)
 
 typedef struct Vector vector_t;

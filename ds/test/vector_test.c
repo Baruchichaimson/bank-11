@@ -4,6 +4,15 @@
 #include <assert.h>
 #include "vector.h"
 
+/***************************
+ Exercise:  stack
+ Date: 	    01/07/25
+ Developer: Baruch Haimson
+ Reviewer:  avi
+ Status:    Approved
+***************************/
+
+
 void TestCreate()
 {
     printf("=== Test: VectorCreate ===\n");

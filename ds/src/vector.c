@@ -3,6 +3,14 @@
 #include <assert.h>     /* assert */
 #include "vector.h"     /* vector_t interface */
 
+/***************************
+ Exercise:  stack
+ Date: 	    01/07/25
+ Developer: Baruch Haimson
+ Reviewer:  avi
+ Status:    Approved
+***************************/
+
 struct Vector
 {
 	char* buffer;
