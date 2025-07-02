@@ -41,9 +41,11 @@ void TestSLLCreateAndIsEmpty()
 
 void TestSLLInsertAndCount()
 {
+	size_t count = 0;
     printf("TestSLLInsertAndCount:\n");
-
+	
     sll_t* list = SLLCreate();
+    node_t* currentNode = SLLEnd(list);
 
     int* a = malloc(sizeof(int)); *a = 10;
     int* b = malloc(sizeof(int)); *b = 20;
@@ -53,34 +55,44 @@ void TestSLLInsertAndCount()
     SLLInsert(SLLEnd(list), b);
     SLLInsert(SLLEnd(list), a);
 
-    size_t count = SLLCount(list);
+    count = SLLCount(list);
     if (count == 3)
     {
         printf("PASS: count correct (Expected: 3, Actual: 3)\n");
+        int valhead = *(int*)SLLGetData(SLLBegin(list));
+        while(SLLNext(currentNode) != SLLEnd(list))
+		{
+			currentNode = SLLNext(currentNode);
+		}
+       
+        int valtail = *(int*)SLLGetData(currentNode);
+      
+        printf("\thead : %d , tail: %d\n", valhead, valtail);
+        
     }
     else
     {
         printf("FAIL: count incorrect (Expected: 3, Actual: %lu)\n", count);
     }
 
-    free(a);
-    free(b);
-    free(c);
     SLLDestroy(list);
     printf("\n");
 }
 
 void TestSLLGetSetData()
 {
+	int new_val = 42;
+	int actual;
     printf("TestSLLGetSetData:\n");
 
     sll_t* list = SLLCreate();
-    int* val = malloc(sizeof(int)); *val = 100;
+    int* val = malloc(sizeof(int));
+    *val = 100;
     SLLInsert(SLLEnd(list), val);
 
-    int new_val = 42;
     SLLSetData(SLLBegin(list), &new_val);
-    int actual = *(int*)SLLGetData(SLLBegin(list));
+    
+    actual = *(int*)SLLGetData(SLLBegin(list));
 
     if (actual == 42)
     {

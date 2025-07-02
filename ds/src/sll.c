@@ -101,9 +101,10 @@ sll_iter_t SLLInsert(sll_iter_t where, void* data)
 	node->next = where->next;
 	where->data = data;
 	where->next = node;
+
 	if (node->next == NULL)
     {
-        list = (sll_t*)node->data;
+    	list = (sll_t*)node->data;
     	list->tail = node;
     }
 	return where;
