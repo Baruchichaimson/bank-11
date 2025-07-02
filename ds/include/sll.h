@@ -22,6 +22,7 @@ size_t SLLCount(const sll_t* list); /* O(n) */
 int SLLIsEmpty(const sll_t* list);  /* O(1) */
 sll_iter_t SLLFind(sll_iter_t from, sll_iter_t to, is_match_func_t is_match, void* param);    /* O(n) */
 int SLLForEach(sll_iter_t from, sll_iter_t to, action_func_t action_func, void* param);   /* O(n) */
+sll_t* SLLAppend(sll_t* src, sll_t* dst); /* O(1) */
 
 #endif /* _ILRD_SLL_ */
 

@@ -119,6 +119,7 @@ sll_iter_t SLLInsert(sll_iter_t where, void* data)
     }
 	return where;
 }
+
 sll_iter_t SLLRemove(sll_iter_t to_remove)
 {
 	node_t* node = NULL;
@@ -167,7 +168,13 @@ sll_iter_t SLLFind(sll_iter_t from, sll_iter_t to, is_match_func_t is_match, voi
 		}
 		from = from->next;
 	}
-	return to;
+	while (NULL != from->next)
+    {
+        from = from->next;
+    }
+    
+    return from;
+
 }
 int SLLForEach(sll_iter_t from, sll_iter_t to, action_func_t action_func, void* param)
 {
@@ -186,9 +193,36 @@ int SLLForEach(sll_iter_t from, sll_iter_t to, action_func_t action_func, void* 
 	return 0;
 }
 
+sll_t* SLLAppend(sll_t* src, sll_t* dst)
+{
+    assert(src);
+    assert(dst);
 
+    if (src->head == src->tail)
+    {
+        return dst;
+    }
 
+    if (dst->head == dst->tail)
+    {
+        dst->head = src->head;
+        dst->tail = src->tail;
 
+        src->head = NULL;
+        src->tail = src->head;
+        return dst;
+    }
+	
+    dst->tail->next = src->head;
+    SLLRemove(dst->tail);
+ 	
+    dst->tail = src->tail;
+
+    src->head = NULL;
+    src->tail = src->head;
+
+    return dst;
+}
 
 
 

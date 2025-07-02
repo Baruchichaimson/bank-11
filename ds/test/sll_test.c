@@ -251,6 +251,162 @@ void TestSLLRemove()
     SLLDestroy(list);
     printf("\n");
 }
+
+void TestSLLAppend()
+{
+    printf("TestSLLAppend:\n");
+
+    /* ----- Case 1: Standard case - both src and dst have elements ----- */
+    {
+        sll_t* src = SLLCreate();
+        sll_t* dst = SLLCreate();
+
+        int* a = malloc(sizeof(int)); *a = 1;
+        int* b = malloc(sizeof(int)); *b = 2;
+        int* c = malloc(sizeof(int)); *c = 3;
+        int* d = malloc(sizeof(int)); *d = 4;
+
+        SLLInsert(SLLEnd(src), c);
+        SLLInsert(SLLEnd(src), d);
+
+        SLLInsert(SLLEnd(dst), b);
+        SLLInsert(SLLEnd(dst), a);
+
+        printf("Before append - src: [");
+        sll_iter_t iter = SLLBegin(src);
+        while (!SLLIsEqual(iter, SLLEnd(src)))
+        {
+            printf("%d", *(int*)SLLGetData(iter));
+            iter = SLLNext(iter);
+            if (!SLLIsEqual(iter, SLLEnd(src)))
+            {
+                printf(", ");
+            }
+        }
+        printf("], dst: [");
+        iter = SLLBegin(dst);
+        while (!SLLIsEqual(iter, SLLEnd(dst)))
+        {
+            printf("%d", *(int*)SLLGetData(iter));
+            iter = SLLNext(iter);
+            if (!SLLIsEqual(iter, SLLEnd(dst)))
+            {
+                printf(", ");
+            }
+        }
+        printf("]\n");
+
+        SLLAppend(src, dst);
+
+        printf("After append - dst: [");
+        iter = SLLBegin(dst);
+        while (!SLLIsEqual(iter, SLLEnd(dst)))
+        {
+            printf("%d", *(int*)SLLGetData(iter));
+            iter = SLLNext(iter);
+            if (!SLLIsEqual(iter, SLLEnd(dst)))
+            {
+                printf(", ");
+            }
+        }
+        printf("]\n");
+
+        SLLForEach(SLLBegin(dst), SLLEnd(dst), FreeData, NULL);
+        SLLDestroy(src);
+        SLLDestroy(dst);
+        printf("\n");
+    }
+
+    /* ----- Case 2: Edge case - src is empty ----- */
+    {
+        sll_t* src = SLLCreate();
+        sll_t* dst = SLLCreate();
+
+        int* a = malloc(sizeof(int)); *a = 7;
+        int* b = malloc(sizeof(int)); *b = 8;
+
+        SLLInsert(SLLEnd(dst), b);
+        SLLInsert(SLLEnd(dst), a);
+
+        printf("Before append - src: [], dst: [");
+        sll_iter_t iter = SLLBegin(dst);
+        while (!SLLIsEqual(iter, SLLEnd(dst)))
+        {
+            printf("%d", *(int*)SLLGetData(iter));
+            iter = SLLNext(iter);
+            if (!SLLIsEqual(iter, SLLEnd(dst)))
+            {
+                printf(", ");
+            }
+        }
+        printf("]\n");
+
+        SLLAppend(src, dst);
+
+        printf("After append - dst: [");
+        iter = SLLBegin(dst);
+        while (!SLLIsEqual(iter, SLLEnd(dst)))
+        {
+            printf("%d", *(int*)SLLGetData(iter));
+            iter = SLLNext(iter);
+            if (!SLLIsEqual(iter, SLLEnd(dst)))
+            {
+                printf(", ");
+            }
+        }
+        printf("]\n");
+
+        SLLForEach(SLLBegin(dst), SLLEnd(dst), FreeData, NULL);
+        SLLDestroy(src);
+        SLLDestroy(dst);
+        printf("\n");
+    }
+
+    /* ----- Case 3: Edge case - dst is empty ----- */
+    {
+        sll_t* src = SLLCreate();
+        sll_t* dst = SLLCreate();
+
+        int* a = malloc(sizeof(int)); *a = 9;
+        int* b = malloc(sizeof(int)); *b = 10;
+
+        SLLInsert(SLLEnd(src), b);
+        SLLInsert(SLLEnd(src), a);
+
+        printf("Before append - src: [");
+        sll_iter_t iter = SLLBegin(src);
+        while (!SLLIsEqual(iter, SLLEnd(src)))
+        {
+            printf("%d", *(int*)SLLGetData(iter));
+            iter = SLLNext(iter);
+            if (!SLLIsEqual(iter, SLLEnd(src)))
+            {
+                printf(", ");
+            }
+        }
+        printf("], dst: []\n");
+
+        SLLAppend(src, dst);
+
+        printf("After append - dst: [");
+		iter = SLLBegin(dst);
+		while (!SLLIsEqual(iter, SLLEnd(dst)))
+		{
+			printf("%d", *(int*)SLLGetData(iter));
+			iter = SLLNext(iter);
+			if (!SLLIsEqual(iter, SLLEnd(dst)))
+			{
+				printf(", ");
+			}
+		}
+		printf("]\n");
+
+        SLLForEach(SLLBegin(dst), SLLEnd(dst), FreeData, NULL);
+        SLLDestroy(src);
+        SLLDestroy(dst);
+        printf("\n");
+    }
+}
 /* =============================match and action functions =====================================*/
 int MatchInt(const void* data, void* param)
 {
@@ -289,6 +445,7 @@ int main()
     TestSLLFind();
     TestSLLForEach();
     TestSLLRemove();
+	TestSLLAppend();
 
     return 0;
 }
