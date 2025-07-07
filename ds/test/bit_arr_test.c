@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include "../include/bit_arr.h"
+#include "bit_arr.h"
 
 #define BUFFER_SIZE 65
 

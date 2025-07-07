@@ -27,6 +27,7 @@ void TestCreate()
         printf("\nCreate normal vector: FAIL\n\tExpected: 8\n\tActual: %zu\n\n", VectorCapacity(v1));
     }
     VectorDestroy(v1);
+    v1 = NULL;
 
     vector_t* v2 = VectorCreate(0, sizeof(int));
     if (v2 && VectorCapacity(v2) == 8)
@@ -38,17 +39,20 @@ void TestCreate()
         printf("Create with 0 capacity: FAIL\n\tExpected: 8\n\tActual: %zu\n\n", VectorCapacity(v2));
     }
     VectorDestroy(v2);
+    v2 = NULL;
 
     vector_t* v3 = VectorCreate(10, 0);
-    if (v3 != NULL)
+    if (v3 == NULL)
     {
         printf("Create with 0 element size: PASS\n\tExpected: Not NULL\n\tActual: Not NULL\n\n");
     }
     else
     {
         printf("Create with 0 element size: FAIL\n\tExpected: Not NULL\n\tActual: NULL\n\n");
+        VectorDestroy(v3);
+        v3 = NULL;
     }
-    VectorDestroy(v3);
+    
     
 	vector_t* v4 = VectorCreate(16, sizeof(int));
     if (v4 && VectorCapacity(v4) == 16 && VectorSize(v4) == 0)
@@ -60,6 +64,7 @@ void TestCreate()
         printf("Create normal vector: FAIL\n\tExpected: 16\n\tActual: %zu\n\n", VectorCapacity(v4));
     }
     VectorDestroy(v4);
+    v4 = NULL;
 }
 
 void TestPushBack()
@@ -113,6 +118,7 @@ void TestPushBack()
         printf("Push another value: FAIL\n\tExpected: 30\n\tActual: %d\n\n", *(int*)VectorGetAccessToElement(v, 2));
     }
     VectorDestroy(v);
+    v = NULL;
 }
 
 void TestPopBack()
@@ -168,6 +174,7 @@ void TestPopBack()
     }
 
     VectorDestroy(v);
+    v = NULL;
 
 	vector_t* v2 = VectorCreate(20, sizeof(int));
     
@@ -175,23 +182,24 @@ void TestPopBack()
     {
         VectorPushBack(v2, &val100);
     }
-    s = VectorCapacity(v);
+    s = VectorCapacity(v2);
     printf("\tThe capacity before pop is:%lu\n\n", s);
     VectorPopBack(v2);
-	if (VectorSize(v) == 5)
+	if (VectorSize(v2) == 5)
     {
-        printf("Pop to zero: PASS\n\tExpected: 5\n\tActual: %zu\n\n", VectorSize(v));
-        s = VectorCapacity(v);
+        printf("Pop to zero: PASS\n\tExpected: 5\n\tActual: %zu\n\n", VectorSize(v2));
+        s = VectorCapacity(v2);
         printf("\tThe capacity after pop is:%lu\n\n", s);
     }
     else
     {
-        printf("Pop to zero: FAIL\n\tExpected: 6\n\tActual: %zu\n\n", VectorSize(v));
-        s = VectorCapacity(v);
+        printf("Pop to zero: FAIL\n\tExpected: 6\n\tActual: %zu\n\n", VectorSize(v2));
+        s = VectorCapacity(v2);
         printf("\tThe capacity is:%lu\n\n", s);
     } 
 
-    VectorDestroy(v);
+    VectorDestroy(v2);
+    v2 = NULL;
 }
 
 void TestReserve()
@@ -222,6 +230,7 @@ void TestReserve()
     }
 
     VectorDestroy(v);
+    v = NULL;
 }
 
 void TestShrink()
@@ -242,6 +251,7 @@ void TestShrink()
     }
 
     VectorDestroy(v);
+    v = NULL;
     
     vector_t* v2 = VectorCreate(10, sizeof(int));
     VectorPushBack(v2, &(int){1});
@@ -264,6 +274,7 @@ void TestShrink()
     }
 
     VectorDestroy(v2);
+    v2 = NULL;
 }
 
 int main()

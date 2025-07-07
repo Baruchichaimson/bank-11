@@ -1,5 +1,5 @@
 #include <limits.h>
-#include "../include/bit_arr.h"
+#include "bit_arr.h"
 
 #define SIZE_BIT (sizeof(bit_arr_t) * CHAR_BIT)
 
@@ -163,7 +163,6 @@ size_t BitArrCountOn(bit_arr_t bit_arr)
     return bit_arr;
 }
 
-}
 size_t BitArrCountOff(bit_arr_t bit_arr)
 {
 	    return SIZE_BIT - BitArrCountOn(bit_arr);

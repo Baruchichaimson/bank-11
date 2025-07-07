@@ -82,7 +82,7 @@ void VectorPopBack(vector_t* vec)
     --vec->size;
     if (vec->size * 4 <= vec->capacity)
     {
-        VectorReserve(vec, vec->capacity / 2;);
+        VectorReserve(vec, vec->capacity / 2);
     }
 }
 
