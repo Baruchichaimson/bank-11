@@ -1,0 +1,16 @@
+CC ?= gcc
+CFLAGS ?= -Wall -Wextra -std=c99 -I../inc -g
+
+SRC = ../src/bit_arr.c ../test/bit_arr_test.c
+
+TARGET = test_bit_arr
+
+all: $(TARGET)
+
+$(TARGET): $(SRC)
+	$(CC) $(CFLAGS) $^ -o $@
+
+clean:
+	rm -f $(TARGET) *.o
+
+.PHONY: all clean

@@ -1,0 +1,16 @@
+CC ?= gcc
+CFLAGS ?= -Wall -Wextra -std=c99 -I../inc -g
+
+SRC = ../src/stack.c ../test/stack_test.c
+
+TARGET = test_stack
+
+all: $(TARGET)
+
+$(TARGET): $(SRC)
+	$(CC) $(CFLAGS) $^ -o $@
+
+clean:
+	rm -f $(TARGET) *.o
+
+.PHONY: all clean
