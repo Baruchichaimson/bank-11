@@ -23,8 +23,9 @@ struct cbuff
 
 cbuff_t* CBuffCreate(size_t capacity)
 {
+	cbuff_t* cbuff = NULL;
 	capacity = (DEFAULT_SIZE < capacity) ? capacity : DEFAULT_SIZE;
-	cbuff_t* cbuff = (cbuff_t*)malloc(sizeof(cbuff) + (capacity * sizeof(char) - DEFAULT_SIZE));
+	cbuff = (cbuff_t*)malloc(sizeof(cbuff) + (capacity * sizeof(char) - DEFAULT_SIZE));
 	if(!cbuff)
 	{
 		return NULL;
@@ -45,7 +46,7 @@ void CBuffDestroy(cbuff_t* cbuff)
 
 ssize_t CBuffWrite(cbuff_t* cbuff, const void* src, size_t bytes)
 {
-	assert (cbuff && src); 
+	assert (cbuff); 
 	
 	size_t amount_write = (bytes < CBuffFreeSpace(cbuff)) ? bytes : CBuffFreeSpace(cbuff);
 	
@@ -81,7 +82,7 @@ ssize_t CBuffWrite(cbuff_t* cbuff, const void* src, size_t bytes)
 
 ssize_t CBuffRead(cbuff_t* cbuff, void* dst, size_t bytes)
 {
-    assert(cbuff && dst);
+    assert(cbuff);
 	
 	size_t amount_read = (bytes < cbuff->size) ? bytes : cbuff->size;
     size_t space_in_end = 0;
