@@ -1,0 +1,16 @@
+CC ?= gcc
+CFLAGS ?= -Wall -Wextra -std=c99 -I../inc -g
+
+SRC = ../src/cbuff.c ../test/cbuff_test.c
+
+TARGET = test_cbuff
+
+all: $(TARGET)
+
+$(TARGET): $(SRC)
+	$(CC) $(CFLAGS) $^ -o $@
+
+clean:
+	rm -f $(TARGET) *.o
+
+.PHONY: all clean

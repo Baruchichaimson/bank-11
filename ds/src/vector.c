@@ -4,7 +4,7 @@
 #include "vector.h"     /* vector_t interface */
 
 /***************************
- Exercise:  stack
+ Exercise:  vector
  Date: 	    01/07/25
  Developer: Baruch Haimson
  Reviewer:  avi
@@ -124,7 +124,6 @@ int VectorReserve(vector_t* vec, size_t new_capacity)
     new_buffer = (char*)realloc(vec->buffer, new_capacity * vec->element_size);
     if (!new_buffer)
     {
-    	VectorDestroy(vec);
         return 1; 
     }
     vec->buffer = new_buffer;

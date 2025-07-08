@@ -1,5 +1,16 @@
+/***************************
+ Exercise:  cbuff
+ Date: 	    07/07/25
+ Developer: Baruch Haimson
+ Reviewer:  
+ Status:    Approved
+***************************/
+
 #ifndef _ILRD_CBUFF_
 #define _ILRD_CBUFF_
+
+#include <stddef.h>
+#include <sys/types.h>
 
 typedef struct cbuff cbuff_t;
 
@@ -26,4 +37,3 @@ size_t CBuffSize(cbuff_t* cbuff);
 
 #endif /* _ILRD_CBUFF_ */
 
-===============================================================================
