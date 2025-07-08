@@ -9,6 +9,8 @@
 #ifndef _ILRD_CBUFF_
 #define _ILRD_CBUFF_
 
+#define DEFAULT_SIZE (8)
+
 #include <stddef.h>
 #include <sys/types.h>
 

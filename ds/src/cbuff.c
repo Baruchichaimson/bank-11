@@ -1,17 +1,17 @@
-#include <assert.h>
-#include <string.h>
-#include <stdlib.h>
-#include "cbuff.h"
-
 /***************************
  Exercise:  cbuff
  Date: 	    07/07/25
  Developer: Baruch Haimson
- Reviewer:  
+ Reviewer:  Avi
  Status:    Approved
 ***************************/
 
+#include <sys/types.h> 	/* ssize_t */
+#include <stdlib.h> 	/* malloc() free() size_t */
+#include <assert.h> 	/* assert */
+#include <string.h> 	/* memcpy */
 
+#include "cbuff.h" /* CBuffCreate() */
 
 struct cbuff
 {
@@ -21,11 +21,10 @@ struct cbuff
     char buffer[1];
 };
 
-
-
 cbuff_t* CBuffCreate(size_t capacity)
 {
-	cbuff_t* cbuff = (cbuff_t*)malloc(sizeof(cbuff) + capacity * sizeof(char));
+	capacity = (DEFAULT_SIZE < capacity) ? capacity : DEFAULT_SIZE;
+	cbuff_t* cbuff = (cbuff_t*)malloc(sizeof(cbuff) + (capacity * sizeof(char) - DEFAULT_SIZE));
 	if(!cbuff)
 	{
 		return NULL;
@@ -47,12 +46,18 @@ void CBuffDestroy(cbuff_t* cbuff)
 ssize_t CBuffWrite(cbuff_t* cbuff, const void* src, size_t bytes)
 {
 	assert (cbuff && src); 
+	
 	size_t amount_write = (bytes < CBuffFreeSpace(cbuff)) ? bytes : CBuffFreeSpace(cbuff);
 	
     size_t start = (cbuff->front + cbuff->size) % cbuff->capacity;
     
     size_t space_in_end = 0;
     
+    if (amount_write == 0)
+	{
+		return 0;
+	}
+
     if (src == NULL) 
     {
     	return -1;
@@ -81,6 +86,11 @@ ssize_t CBuffRead(cbuff_t* cbuff, void* dst, size_t bytes)
 	size_t amount_read = (bytes < cbuff->size) ? bytes : cbuff->size;
     size_t space_in_end = 0;
     
+    if (amount_read == 0)
+	{
+		return 0;
+	}
+	
     if (dst == NULL) 
     {
     	return -1;
