@@ -1,3 +1,11 @@
+/***************************
+ Exercise:  dll
+ Date: 	    09/07/25
+ Developer: Baruch Haimson
+ Reviewer:  Lotem
+ Status:    
+***************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "dll.h"

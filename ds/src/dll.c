@@ -1,3 +1,11 @@
+/***************************
+ Exercise:  dll
+ Date: 	    09/07/25
+ Developer: Baruch Haimson
+ Reviewer:  Lotem
+ Status:    
+***************************/
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -121,18 +129,18 @@ dll_iter_t DLLInsert(dll_t* list, dll_iter_t where, void* data)
 
 dll_iter_t DLLRemove(dll_iter_t to_remove)
 {
-	
-    dll_iter_t next = to_remove->next;
+	node_t* to_remove_node = IterToNode(to_remove);
+    node_t* next = IterToNode(to_remove_node->next);
     
-	assert(to_remove);
-	assert(to_remove->prev);
-	assert(to_remove->next);
+	assert(to_remove_node);
+	assert(to_remove_node->prev);
+	assert(to_remove_node->next);
 	
-    RemoveBetween(to_remove->prev, to_remove->next, to_remove);
+    RemoveBetween(to_remove_node->prev, to_remove_node->next, to_remove_node);
     
     free(to_remove);
 
-    return next;
+    return NodeToIter(next);
 }
 
 dll_iter_t DLLPushFront(dll_t* list, void* data)
