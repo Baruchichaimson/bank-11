@@ -11,6 +11,9 @@
 #include <assert.h>
 #include "dll.h"
 
+#define ISEND(iter) (IterToNode(iter)->next == NULL)
+#define ISBEGIN(iter) (IterToNode(iter)->prev == NULL)
+
 typedef struct node
 {
     void* data;
@@ -103,19 +106,23 @@ int DLLIsEqual(dll_iter_t iter1, dll_iter_t iter2)
 
 void* DLLGetData(dll_iter_t iter)
 {
-    assert(IterToNode(iter));
+    assert(!ISEND(iter));
+    assert(!ISBEGIN(iter));
     return IterToNode(iter)->data;
 }
 
 void DLLSetData(dll_iter_t iter, void* data)
 {
     assert(IterToNode(iter));
+    assert(!ISBEGIN(iter));
+	assert(!ISEND(iter));
     IterToNode(iter)->data = data;
 }
 
 dll_iter_t DLLInsert(dll_t* list, dll_iter_t where, void* data)
 {
     assert(IterToNode(where));
+    
     dll_iter_t new_node = CreateNode(data);
     if (!new_node)
     {
@@ -133,8 +140,8 @@ dll_iter_t DLLRemove(dll_iter_t to_remove)
     node_t* next = IterToNode(to_remove_node->next);
     
 	assert(to_remove_node);
-	assert(to_remove_node->prev);
-	assert(to_remove_node->next);
+	assert(!ISBEGIN(to_remove));
+	assert(!ISEND(to_remove));
 	
     RemoveBetween(to_remove_node->prev, to_remove_node->next, to_remove_node);
     
@@ -240,30 +247,38 @@ int DLLForEach(dll_iter_t from, dll_iter_t to, int (*action_func)(void*, void*),
 
 dll_iter_t DLLSplice(dll_iter_t where, dll_iter_t from, dll_iter_t to)
 {
-	dll_iter_t from_prev = NULL;
-    dll_iter_t to_prev = NULL;
-    dll_iter_t where_prev = NULL;
+	node_t* where_node = IterToNode(where);
+    node_t* from_node = IterToNode(from);
+    node_t* to_node = IterToNode(to);
+
+	node_t* from_prev = NULL;
+    node_t* to_prev = NULL;
+    node_t* where_prev = NULL;
     
+    assert(where_node);
+    assert(from_node);
+    assert(to_node);
+
     if (DLLIsEqual(from, to))
     {
         return NULL;
     }
-
-    from_prev = from->prev;
-    to_prev = to->prev;
+    
+    from_prev = from_node->prev;
+    to_prev = to_node->prev;
 
     /* Disconnect [from, to) */
-    from_prev->next = to;
-    to->prev = from_prev;
+    from_prev->next = to_node;
+    to_node->prev = from_prev;
 
     /* Connect before where */
-    where_prev = where->prev;
+    where_prev = where_node->prev;
     
-    where_prev->next = from;
-    from->prev = where_prev;
+    where_prev->next = from_node;
+    from_node->prev = where_prev;
 
-    to_prev->next = where;
-    where->prev = to_prev;
+    to_prev->next = where_node;
+    where_node->prev = to_prev;
 
     return where;
 }
