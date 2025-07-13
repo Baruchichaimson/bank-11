@@ -3,19 +3,14 @@
  Date: 	    09/07/25
  Developer: Baruch Haimson
  Reviewer:  Lotem
- Status:    
+ Status:    Approved
 ***************************/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "dll.h"
 
-typedef enum
-{
-    SUCCESS,
-    FALIURE,
-    PARTIAL_FALUIRE
-};
+typedef enum { SUCCESS = 0, FALIURE = -1, PARTIAL_FALUIRE = -2 } status_t;
 
 void TestPushPop();
 void TestInsertRemove();

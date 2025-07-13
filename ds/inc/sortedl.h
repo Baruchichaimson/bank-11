@@ -1,14 +1,19 @@
+/***************************
+ * Exercise: Sorted List
+ * Date:     10/07/25
+ * Developer: Baruch Haimson
+ * Reviewer: 
+ * Status:   In Progress
+ ***************************/
+
 #ifndef _ILRD_SORTEDL_H_
 #define _ILRD_SORTEDL_H_
 
+#include <stddef.h>
+#include "dll.h"
+
 typedef struct sortedl_iter_t sorted_iter_t;
 typedef struct sortedl sortedl_t;
-
-struct sortedl
-{
-    dll_t* list;
-    int (cmp*)(const void* data1, const void* data2);
-};
 
 struct sortedl_iter_t
 {

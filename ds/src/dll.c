@@ -3,7 +3,7 @@
  Date: 	    09/07/25
  Developer: Baruch Haimson
  Reviewer:  Lotem
- Status:    
+ Status:    Approved
 ***************************/
 
 #include <stddef.h>
@@ -27,12 +27,7 @@ struct dll
     node_t tail;
 };
 
-typedef enum
-{
-	SUCCESS = 0,
-	FALIURE = -1,
-	PARTIAL_FALUIRE = -2
-};
+typedef enum { SUCCESS = 0, FALIURE = -1, PARTIAL_FALUIRE = -2 } status_t;
 
 /********************************** HELPER FUNCTIONS ******************************************/
 
@@ -65,7 +60,7 @@ dll_t* DLLCreate(void)
 
 void DLLDestroy(dll_t* list)
 {
-    
+    assert(list);
     while (!DLLIsEmpty(list))
     {
     	DLLRemove(DLLBegin(list));
@@ -101,6 +96,8 @@ dll_iter_t DLLPrev(dll_iter_t iter)
 
 int DLLIsEqual(dll_iter_t iter1, dll_iter_t iter2)
 {
+	 assert(iter1);
+	 assert(iter2);
      return iter1 == iter2;
 }
 
@@ -152,16 +149,19 @@ dll_iter_t DLLRemove(dll_iter_t to_remove)
 
 dll_iter_t DLLPushFront(dll_t* list, void* data)
 {
+	assert(list);
     return DLLInsert(list, DLLBegin(list), data);
 }
 
 dll_iter_t DLLPushBack(dll_t* list, void* data)
 {
+	assert(list);
     return DLLInsert(list, DLLEnd(list), data);
 }
 
 void* DLLPopFront(dll_t* list)
 {
+    assert(list);
     void* data = DLLGetData(DLLBegin(list));
     DLLRemove(DLLBegin(list));
     return data;
@@ -169,6 +169,7 @@ void* DLLPopFront(dll_t* list)
 
 void* DLLPopBack(dll_t* list)
 {
+    assert(list);
     void* data = DLLGetData(DLLPrev(DLLEnd(list)));
     DLLRemove(DLLPrev(DLLEnd(list)));
     return data;
@@ -176,6 +177,7 @@ void* DLLPopBack(dll_t* list)
 
 size_t DLLCount(const dll_t* list)
 {
+    assert(list);
     size_t counter = 0;
     DLLForEach(DLLBegin(list), DLLEnd(list), Count, &counter);
     return counter;
@@ -183,6 +185,7 @@ size_t DLLCount(const dll_t* list)
 
 int DLLIsEmpty(const dll_t* list)
 {
+    assert(list);
     return DLLIsEqual(DLLBegin(list), DLLEnd(list));
 }
 
