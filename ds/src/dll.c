@@ -96,9 +96,9 @@ dll_iter_t DLLPrev(dll_iter_t iter)
 
 int DLLIsEqual(dll_iter_t iter1, dll_iter_t iter2)
 {
-	 assert(iter1);
-	 assert(iter2);
-     return iter1 == iter2;
+	 assert(IterToNode(iter1));
+	 assert(IterToNode(iter2));
+     return IterToNode(iter1) == IterToNode(iter2);
 }
 
 void* DLLGetData(dll_iter_t iter)

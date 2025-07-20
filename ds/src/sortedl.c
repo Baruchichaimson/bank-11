@@ -75,16 +75,11 @@ sorted_iter_t SortedLInsert(sortedl_t* list, void* data)
 
 sorted_iter_t SortedLRemove(sorted_iter_t to_remove)
 {
-    sorted_iter_t next;
+	assert(to_remove.iter);
 
-    next.iter = DLLNext(to_remove.iter);
-#ifndef NDEBUG
-    next.list = to_remove.list;
-#endif
+    to_remove.iter = DLLRemove(to_remove.iter);
 
-    DLLRemove(to_remove.iter);
-
-    return next;
+    return to_remove;
 }
 
 size_t SortedLSize(const sortedl_t* list)
@@ -110,7 +105,7 @@ sorted_iter_t SortedLFind(sortedl_t* list, sorted_iter_t from, sorted_iter_t to,
 
     while (!SortedLIsEqual(from, to))
     {
-    	if(list->cmp(to_find, SortedLGetData(from)) <= 0)
+    	if(list->cmp(to_find, SortedLGetData(from)) == 0)
     	{
     		return from;
     	}
@@ -127,40 +122,30 @@ sorted_iter_t SortedLFindIf(sorted_iter_t from, sorted_iter_t to, int (*is_match
 	assert(from.list == to.list);
 	assert(is_match_func);
 	
-	sorted_iter_t result;
-	
 	result.iter = DLLFind(from.iter ,to.iter, is_match_func, param);
-#ifndef NDEBUG
-    result.list = result.list;
-#endif
+
 	return result;
 }
 
 int SortedLIsEqual(sorted_iter_t iter1, sorted_iter_t iter2)
 {
+	assert(iter1.list == iter2.list);
+
     return DLLIsEqual(iter1.iter, iter2.iter);
 }
 
 sorted_iter_t SortedLNext(sorted_iter_t curr)
 {
-    sorted_iter_t next;
-    next.iter = DLLNext(curr.iter);
-#ifndef NDEBUG
-    next.list = curr.list;
-#endif
+    curr.iter = DLLNext(curr.iter);
 
-    return next;
+    return curr;
 }
 
 sorted_iter_t SortedLPrev(sorted_iter_t curr)
 {
-    sorted_iter_t prev;
-    prev.iter = DLLPrev(curr.iter);
-#ifndef NDEBUG
-    prev.list = curr.list;
-#endif
+    curr.iter = DLLPrev(curr.iter);
 
-    return prev;
+    return curr;
 }
 
 void* SortedLGetData(sorted_iter_t iter)
@@ -193,6 +178,7 @@ sorted_iter_t SortedLEnd(const sortedl_t* list)
 void* SortedLPopFront(sortedl_t* list)
 {
     assert(list);
+    assert(!SortedLIsEmpty(list));
 
     return DLLPopFront(list->list);
 }
@@ -200,6 +186,7 @@ void* SortedLPopFront(sortedl_t* list)
 void* SortedLPopBack(sortedl_t* list)
 {
     assert(list);
+    assert(!SortedLIsEmpty(list));
 
     return DLLPopBack(list->list);
 }
@@ -227,6 +214,8 @@ void SortedLMerge(sortedl_t* dest, sortedl_t* src)
 
 int SortedLForEach(sorted_iter_t from, sorted_iter_t to, int (*action_func)(void* data, void* param), void* param)
 {
+	assert(from.list == to.list);
+		
     return DLLForEach(from.iter, to.iter, action_func, param);
 }
 
@@ -243,6 +232,4 @@ static dll_iter_t FindInsertPosition(const sortedl_t* list, const void* data)
 
     return iter;
 }
-
-
 
