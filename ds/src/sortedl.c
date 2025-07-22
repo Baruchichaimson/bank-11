@@ -1,15 +1,15 @@
 /***************************
  * Exercise: Sorted List
- * Date:     10/07/25
+ * Date:     13/07/25
  * Developer: Baruch Haimson
- * Reviewer: 
- * Status:   In Progress
+ * Reviewer: Daniel
+ * Status:   Approved
  ***************************/
 
-#include <stdlib.h>
-#include <assert.h>
-#include "sortedl.h"
-#include "dll.h"
+#include <stdlib.h> /* malloc */
+#include <assert.h> /* assert */
+#include "sortedl.h" /* API */
+#include "dll.h" /* API */
 
 struct sortedl
 {
