@@ -9,7 +9,7 @@
 #include <stdlib.h> /* size_t */
 #include <assert.h> /* assert */
 
-#include "fsa.h"
+#include "fsa.h" /* fsa API */
 
 #define WORD_SIZE (sizeof(size_t))
 
