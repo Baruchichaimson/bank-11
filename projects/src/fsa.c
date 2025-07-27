@@ -29,6 +29,8 @@ size_t FSASuggestSize(size_t block_amount, size_t block_size)
 
 fsa_t* FSAInit(void* fsa, size_t fsa_size, size_t block_size)
 {
+	assert(fsa);
+
 	size_t i = 0;
     size_t* curr = NULL;
     
@@ -44,7 +46,7 @@ fsa_t* FSAInit(void* fsa, size_t fsa_size, size_t block_size)
 
     for (i = 0; i < num_of_blocks - 1; ++i)
     {
-        curr = (size_t*)((char*)fsa + current_offset);
+        curr = (size_t*)((char*)pool + current_offset);
         current_offset += aligned_block_size;
         *curr = current_offset;  
     }
