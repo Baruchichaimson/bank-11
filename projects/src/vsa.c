@@ -1,11 +1,12 @@
-#include <assert.h>
-#include <stdlib.h>
+#include <assert.h> /* assert */
+#include <stdlib.h> /* size_t */
 
-#include "vsa.h"
+#include "vsa.h" /* API vsa */
 
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 #define WORD_SIZE sizeof(size_t)
 #define ALIGN_UP(x)  (((size_t)(x) + (WORD_SIZE - 1)) & ~(WORD_SIZE - 1))
+#define ALIGN_DOWN(x)  (((size_t)(x)) & ~(WORD_SIZE - 1))
 
 typedef struct VSA 
 {
@@ -22,13 +23,13 @@ typedef struct Header
 
 /********************** helper function *********************************************/
 static void checkRemain(header_t* curr, size_t aligned_size);
-static void freeNeighbors(vsa_t* vsa);
+static void freeNeighbors(vsa_t* vsa, size_t aligned_size);
 /************************************************************************************/
 
 vsa_t* VSAInit(void* pool, size_t pool_size)
 {
 	vsa_t* vsa = (vsa_t*)ALIGN_UP(pool);
-	size_t aligned_size = pool_size - ((char*)vsa - (char*)pool);
+	size_t aligned_size = ALIGN_DOWN(pool_size - ((char*)vsa - (char*)pool));
 	
 	header_t* header = (header_t*)((char*)vsa + sizeof(vsa_t));
 	size_t header_space = aligned_size - sizeof(vsa_t);
@@ -51,7 +52,7 @@ void* VSAAlloc(vsa_t* vsa, size_t block_size)
 
 	assert(vsa);
 
-	freeNeighbors(vsa);
+	freeNeighbors(vsa, aligned_size);
 	
 	curr = (header_t*)((char*)vsa + sizeof(vsa_t));
 	
@@ -95,7 +96,7 @@ void VSAFree(void* block)
 	#endif
 }
 
-size_t VSALargestChunkAvailable(vsa_t* vsa)
+/*size_t VSALargestChunkAvailable(vsa_t* vsa)
 {
 	header_t* curr = NULL;
     size_t largest = 0;
@@ -117,6 +118,37 @@ size_t VSALargestChunkAvailable(vsa_t* vsa)
     }
 
     return largest;
+}*/
+
+size_t VSALargestChunkAvailable(vsa_t* vsa)
+{
+	header_t* next = NULL;
+	size_t largest = 0;
+    header_t* curr = (header_t*)((char*)vsa + sizeof(vsa_t));
+    
+	assert(vsa);
+	
+    while ((char*)curr < (char*)vsa->end_pool)
+    {
+        if (curr->block_size > 0)
+        {
+            next = (header_t*)((char*)curr + sizeof(header_t) + curr->block_size);
+
+            while ((char*)next < (char*)vsa->end_pool && next->block_size > 0)
+            {
+                curr->block_size += sizeof(header_t) + next->block_size;
+                
+                next = (header_t*)((char*)next + sizeof(header_t) + next->block_size);
+            }
+			if((size_t)curr->block_size > largest)
+			{
+				largest = curr->block_size;
+			}
+        }
+
+        curr = (header_t*)((char*)curr + sizeof(header_t) + ABS(curr->block_size));
+    }
+	return largest;
 }
 
 /********************** helper function ******************************************************************/
@@ -126,6 +158,11 @@ static void checkRemain(header_t* curr, size_t aligned_size)
 	header_t* new_block = NULL;
 	size_t new_block_size = 0;
 
+	if (curr->block_size  < 0)
+    {
+        return;
+    }
+	
 	long remaining = curr->block_size - (long)aligned_size;
 
 	if (remaining >= (long)(sizeof(header_t) + sizeof(size_t)))
@@ -148,7 +185,7 @@ static void checkRemain(header_t* curr, size_t aligned_size)
     }
 }
 
-static void freeNeighbors(vsa_t* vsa)
+static void freeNeighbors(vsa_t* vsa, size_t aligned_size)
 {
 	header_t* next = NULL;
     header_t* curr = (header_t*)((char*)vsa + sizeof(vsa_t));
@@ -161,11 +198,16 @@ static void freeNeighbors(vsa_t* vsa)
         {
             next = (header_t*)((char*)curr + sizeof(header_t) + curr->block_size);
 
-            while ((char*)next < (char*)vsa->end_pool && next->block_size > 0)
+            while ((char*)next < (char*)vsa->end_pool && next->block_size > 0 && curr->block_size < (long)aligned_size)
             {
                 curr->block_size += sizeof(header_t) + next->block_size;
 
                 next = (header_t*)((char*)next + sizeof(header_t) + next->block_size);
+            }
+            
+			if (curr->block_size >= (long)aligned_size)
+            {
+                return; 
             }
         }
 
