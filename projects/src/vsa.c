@@ -1,5 +1,4 @@
 #include <assert.h> /* assert */
-#include <stdlib.h> /* size_t */
 
 #include "vsa.h" /* API vsa */
 
@@ -8,10 +7,10 @@
 #define ALIGN_UP(x)  (((size_t)(x) + (WORD_SIZE - 1)) & ~(WORD_SIZE - 1))
 #define ALIGN_DOWN(x)  (((size_t)(x)) & ~(WORD_SIZE - 1))
 
-typedef struct VSA 
+struct VSA 
 {
 	void* end_pool;
-}vsa_t;
+};
 
 typedef struct Header
 {
@@ -23,7 +22,7 @@ typedef struct Header
 
 /********************** helper function *********************************************/
 static void checkRemain(header_t* curr, size_t aligned_size);
-static void freeNeighbors(vsa_t* vsa, size_t aligned_size);
+static header_t* freeNeighbors(vsa_t* vsa, size_t aligned_size);
 /************************************************************************************/
 
 vsa_t* VSAInit(void* pool, size_t pool_size)
@@ -52,26 +51,20 @@ void* VSAAlloc(vsa_t* vsa, size_t block_size)
 
 	assert(vsa);
 
-	freeNeighbors(vsa, aligned_size);
-	
-	curr = (header_t*)((char*)vsa + sizeof(vsa_t));
-	
-	while((char*)curr < (char*)vsa->end_pool)
+	curr = freeNeighbors(vsa, aligned_size);
+	if(!curr)
 	{
-		if(curr->block_size > 0 && (size_t)curr->block_size >= aligned_size)
-		{
-			checkRemain(curr, aligned_size);
-			
-			#ifndef NDEBUG
-				curr->magic_number = 0xDEADBEEF;
-			#endif
-
-			return (char*)curr + sizeof(header_t);
-		}
-        curr = (header_t*)((char*)curr + sizeof(header_t) + ABS(curr->block_size));
+		return NULL;
 	}
+
+	checkRemain(curr, aligned_size);
 	
-    return NULL; 
+	#ifndef NDEBUG
+		curr->magic_number = 0xDEADBEEF;
+	#endif
+
+	return (char*)curr + sizeof(header_t);
+
 }
 
 void VSAFree(void* block)
@@ -85,40 +78,13 @@ void VSAFree(void* block)
 
     header = (header_t*)((char*)block - sizeof(header_t));
 
-    assert(header->block_size < 0);
 	assert(header->magic_number == 0xDEADBEEF);
 
-
     header->block_size = -header->block_size;
-
 	#ifndef NDEBUG
-		header->magic_number = 0xDEADBEEF;
+		header->magic_number = 0;
 	#endif
 }
-
-/*size_t VSALargestChunkAvailable(vsa_t* vsa)
-{
-	header_t* curr = NULL;
-    size_t largest = 0;
-
-    assert(vsa);
-
-    freeNeighbors(vsa);
-
-    curr = (header_t*)((char*)vsa + sizeof(vsa_t));
-
-    while ((char*)curr < (char*)vsa->end_pool)
-    {
-        if (curr->block_size > 0 && (size_t)curr->block_size > largest)
-        {
-            largest = curr->block_size;
-        }
-
-        curr = (header_t*)((char*)curr + sizeof(header_t) + ABS(curr->block_size));
-    }
-
-    return largest;
-}*/
 
 size_t VSALargestChunkAvailable(vsa_t* vsa)
 {
@@ -157,13 +123,14 @@ static void checkRemain(header_t* curr, size_t aligned_size)
 {
 	header_t* new_block = NULL;
 	size_t new_block_size = 0;
+	long remaining = 0;
 
 	if (curr->block_size  < 0)
     {
         return;
     }
 	
-	long remaining = curr->block_size - (long)aligned_size;
+	remaining = curr->block_size - (long)aligned_size;
 
 	if (remaining >= (long)(sizeof(header_t) + sizeof(size_t)))
     {
@@ -174,18 +141,16 @@ static void checkRemain(header_t* curr, size_t aligned_size)
 		
         new_block->block_size = (long)new_block_size;
         
-		#ifndef NDEBUG
-        	new_block->magic_number = 0xDEADBEEF;
-		#endif
         curr->block_size = -(long)aligned_size;
     }
     else
     {
         curr->block_size = -curr->block_size;
     }
+	
 }
 
-static void freeNeighbors(vsa_t* vsa, size_t aligned_size)
+static header_t* freeNeighbors(vsa_t* vsa, size_t aligned_size)
 {
 	header_t* next = NULL;
     header_t* curr = (header_t*)((char*)vsa + sizeof(vsa_t));
@@ -207,10 +172,11 @@ static void freeNeighbors(vsa_t* vsa, size_t aligned_size)
             
 			if (curr->block_size >= (long)aligned_size)
             {
-                return; 
+                return curr; 
             }
         }
 
         curr = (header_t*)((char*)curr + sizeof(header_t) + ABS(curr->block_size));
     }
+	return NULL;
 }

@@ -89,19 +89,6 @@ void TestVSAAlloc()
     printf("=== After Allocating 60 ===\n");
 
     printf("\nTestVSAAlloc passed\n");
-    /*char pool[POOL_SIZE] = {0};
-    vsa_t* vsa = VSAInit(pool, POOL_SIZE);
-
-    void* p1 = VSAAlloc(vsa, 16);
-    assert(p1 != NULL);
-
-    void* p2 = VSAAlloc(vsa, 8);
-    assert(p2 != NULL);
-
-    void* p3 = VSAAlloc(vsa, POOL_SIZE);  
-    assert(p3 == NULL);
-
-    printf("TestVSAAlloc passed\n");*/
 }
 
 static void PrintBlocks(vsa_t* vsa)
