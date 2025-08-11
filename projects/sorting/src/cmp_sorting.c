@@ -3,7 +3,7 @@
  * Date: 05/08/25
  * Developer: Baruch Haimson
  * Reviewer: guy
- * Status: 
+ * Status: Approved
  ************************************/
  
 #include <assert.h> /* assert */
@@ -98,6 +98,6 @@ static void swap(int* a, int* b)
 	int temp = 0;
 	
 	temp = *a;
-    *a = *b;
-    *b = temp;
+	*a = *b;
+	*b = temp;
 }

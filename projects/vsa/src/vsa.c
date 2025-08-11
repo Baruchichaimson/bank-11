@@ -42,8 +42,59 @@ vsa_t* VSAInit(void* pool, size_t pool_size)
 	
 	return vsa;
 }
-
 void* VSAAlloc(vsa_t* vsa, size_t block_size)
+{
+	header_t* curr = NULL;
+	header_t* next = NULL;
+	long remaining = 0;
+
+	size_t aligned_size = ALIGN_UP(block_size);
+
+	header_t* new_block = NULL;
+	size_t new_block_size = 0;
+
+	assert(vsa);
+
+	curr = (header_t*)((char*)vsa + sizeof(vsa_t));
+	while ((char*)curr < (char*)vsa->end_pool)
+	{
+		if (curr->block_size > 0)
+		{
+			next = (header_t*)((char*)curr + sizeof(header_t) + curr->block_size);
+			while ((char*)next < (char*)vsa->end_pool && next->block_size > 0 && curr->block_size < (long)aligned_size)
+			{
+				curr->block_size += sizeof(header_t) + next->block_size;
+				next = (header_t*)((char*)next + sizeof(header_t) + next->block_size);
+			}
+			
+			if (curr->block_size >= (long)aligned_size)
+			{
+				remaining = curr->block_size - (long)aligned_size;
+
+				if (remaining >= (long)(sizeof(header_t) + sizeof(size_t)))
+				{
+					new_block = (header_t*)((char*)curr + sizeof(header_t) + aligned_size);
+					new_block_size = (size_t)(remaining - sizeof(header_t));
+					new_block_size -= new_block_size % sizeof(size_t); 
+
+					new_block->block_size = (long)new_block_size;
+					curr->block_size = -(long)aligned_size;
+				}
+				else
+				{
+					curr->block_size = -curr->block_size;
+				}
+				#ifndef NDEBUG
+					curr->magic_number = 0xDEADBEEF;
+				#endif
+				return (char*)curr + sizeof(header_t);
+			}
+		}
+		curr = (header_t*)((char*)curr + sizeof(header_t) + ABS(curr->block_size));
+	}
+	return NULL;
+}
+/*void* VSAAlloc(vsa_t* vsa, size_t block_size)
 {
 	header_t* curr = NULL;
 	
@@ -65,7 +116,7 @@ void* VSAAlloc(vsa_t* vsa, size_t block_size)
 
 	return (char*)curr + sizeof(header_t);
 
-}
+}*/
 
 void VSAFree(void* block)
 {
@@ -119,7 +170,7 @@ size_t VSALargestChunkAvailable(vsa_t* vsa)
 
 /********************** helper function ******************************************************************/
 
-static void checkRemain(header_t* curr, size_t aligned_size)
+/*static void checkRemain(header_t* curr, size_t aligned_size)
 {
 	header_t* new_block = NULL;
 	size_t new_block_size = 0;
@@ -179,4 +230,4 @@ static header_t* freeNeighbors(vsa_t* vsa, size_t aligned_size)
         curr = (header_t*)((char*)curr + sizeof(header_t) + ABS(curr->block_size));
     }
 	return NULL;
-}
+}*/
