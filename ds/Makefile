@@ -2,8 +2,8 @@ TARGET = $(word 1, $(MAKECMDGOALS))
 ACTION = $(word 2, $(MAKECMDGOALS))
 
 CC = gcc
-CFLAGS_DEBUG := -ansi -pedantic-errors -Wall -std=c99 -Wextra -fPIC -g -MMD
-CFLAGS_RELEASE := -ansi -pedantic-errors -Wall -std=c99 -Wextra -fPIC -DNDEBUG -O3 -MMD
+CFLAGS_DEBUG := -ansi -pedantic-errors -Wall  -Wextra -fPIC -g -MMD
+CFLAGS_RELEASE := -ansi -pedantic-errors -Wall  -Wextra -fPIC -DNDEBUG -O3 -MMD
 
 BIN_DEBUG_DIR = bin/debug
 BIN_RELEASE_DIR = bin/release

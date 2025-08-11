@@ -51,66 +51,37 @@ bst_t* BSTCreate(cmp_func_t cmp)
 void BSTDestroy(bst_t* tree)
 {
     bst_node_t* current = tree->root_stub.children[LEFT];
-    bst_node_t* prev = &tree->root_stub;  
-    bst_node_t* next = NULL;
+    bst_node_t* parent = NULL;
 
     assert(tree);
 
-    if (BSTIsEmpty(tree))
+    while (!BSTIsEmpty(tree))
     {
-        free(tree);
-        return;
+        while (current->children[LEFT] != NULL)
+        {
+            current = current->children[LEFT];
+        }
+
+        parent = current->parent;
+
+        if (parent->children[LEFT] == current)
+        {
+            parent->children[LEFT] = NULL;
+        }
+        else if (parent->children[RIGHT] == current)
+        {
+            parent->children[RIGHT] = NULL;
+        }
+
+        free(current);
+
+        current = parent;
+
+        if (current->children[RIGHT] != NULL)
+        {
+            current = current->children[RIGHT];
+        }
     }
-
-    while (current->parent != NULL)
-    {
-        if (prev == current->parent)
-        {
-            if (current->children[LEFT] != NULL)
-            {
-                next = current->children[LEFT];
-            }
-            else if (current->children[RIGHT] != NULL)
-            {
-                next = current->children[RIGHT];
-            }
-            else
-            {
-                next = current->parent;
-                free(current);
-                current = NULL;
-            }
-        }
-        else if (prev == current->children[LEFT])
-        {
-            if (current->children[RIGHT] != NULL)
-            {
-                next = current->children[RIGHT];
-            }
-            else
-            {
-                next = current->parent;
-                free(current);
-                current = NULL; 
-            }
-        }
-        else if (prev == current->children[RIGHT])
-        {
-            next = current->parent;
-            free(current);
-            current = NULL;
-        }
-
-        if(!current)
-        {
-            current = next;
-            prev = next->children[RIGHT];
-            continue;
-        }
-        prev = current;
-        current = next;
-    }
-
     free(tree);
 }
 
@@ -126,7 +97,7 @@ bst_iter_t BSTInsert(bst_t* tree, void* data)
     new_node = (bst_node_t*)malloc(sizeof(bst_node_t));
     if (!new_node)
     {
-        return (bst_iter_t){NULL};
+        return NodeToIter(NULL);
     }
 
     new_node->data = data;
@@ -137,7 +108,7 @@ bst_iter_t BSTInsert(bst_t* tree, void* data)
     {
         tree->root_stub.children[LEFT] = new_node;
         new_node->parent = &tree->root_stub;
-        return (bst_iter_t){new_node};
+        return NodeToIter(new_node);
     }
 
     while (current != NULL)
@@ -165,7 +136,7 @@ bst_iter_t BSTInsert(bst_t* tree, void* data)
         parent->children[RIGHT] = new_node;
     }
 
-    return (bst_iter_t){new_node};
+    return NodeToIter(new_node);
 }
 
 void BSTRemove(bst_iter_t to_remove)
@@ -245,7 +216,8 @@ bst_iter_t BSTBegin(const bst_t* tree)
 
 bst_iter_t BSTEnd(const bst_t* tree)
 {
-    return NodeToIter(tree->root_stub.parent);
+    assert(tree);
+    return NodeToIter((bst_node_t*)&tree->root_stub);
 }
 
 bst_iter_t BSTPrev(bst_iter_t iter)
@@ -264,7 +236,7 @@ bst_iter_t BSTPrev(bst_iter_t iter)
     {
         while (iter.node->parent && iter.node->parent->children[RIGHT] != iter.node)
         {
-            iter = (bst_iter_t){iter.node->parent};
+            iter = NodeToIter(iter.node->parent);
         }
         prev.node = iter.node->parent;
     }
@@ -287,7 +259,7 @@ bst_iter_t BSTNext(bst_iter_t iter)
     {
         while (iter.node->parent && iter.node->parent->children[LEFT] != iter.node)
         {
-            iter = (bst_iter_t){iter.node->parent};
+            iter = NodeToIter(iter.node->parent);
         }
         next = iter.node->parent;
     }
@@ -328,7 +300,7 @@ bst_iter_t BSTFind(const bst_t* bst, void* to_find)
         }
     }
 
-    return (bst_iter_t){NULL}; 
+    return NodeToIter(NULL);
 }
 
 int BSTForEach(bst_iter_t from, bst_iter_t to, int(*action_func)(void* data, void* param), void* param)
@@ -337,13 +309,13 @@ int BSTForEach(bst_iter_t from, bst_iter_t to, int(*action_func)(void* data, voi
 
     assert(action_func);
 
-    while (current && !BSTIterIsSame((bst_iter_t){current}, to))
+    while (current && !BSTIterIsSame(NodeToIter(current), to))
     {
         if (action_func(current->data, param) != 0)
         {
             return -1;
         }
-        current = BSTNext((bst_iter_t){current}).node;
+        current = BSTNext(NodeToIter(current)).node;
     }
 
     return 0;
@@ -351,7 +323,9 @@ int BSTForEach(bst_iter_t from, bst_iter_t to, int(*action_func)(void* data, voi
 
 static bst_iter_t NodeToIter(bst_node_t* node)
 {
-    return (bst_iter_t){node};
+    bst_iter_t iter;
+    iter.node = node;
+    return iter;
 }
 
 static void swap(void* data1, void* data2)
