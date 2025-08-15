@@ -1,12 +1,21 @@
+/************************************
+ * Exercise: calculator (FSM)
+ * Date: 15/08/25
+ * Developer: Baruch Haimson
+ * Reviewer: Tal
+ * Status: In Progress
+ ************************************/
+
 #ifndef __CALCULATOR_H__
 #define __CALCULATOR_H__
 
-typedef enum calculator_status
+typedef enum status
 {
-    CALC_SUCCESS,
-    CALC_ARITHMETIC_ERROR,
-    CALC_SYNTAX_ERROR
-} calc_status_t;
+    SUCCESS,
+    MATH_ERROR,
+    SYNTAX_ERROR,
+    ALLOC_ERROR
+} calculator_status_e;
 
 typedef enum state
 {
@@ -23,10 +32,11 @@ typedef enum event
     EVENT_RPAREN,
     EVENT_SPACE,
     EVENT_END,
+    EVENT_ERROR,
     NUM_EVENTS
 } event_t;
 
 
-calc_status_t Calculator(const char* expression, double* res);
+calculator_status_e Calculator(const char* expression, double* res);
 
 #endif /* __CALCULATOR_H__ */

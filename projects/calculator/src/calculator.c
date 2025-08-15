@@ -1,12 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <assert.h>
-#include <math.h>
+/************************************
+ * Exercise: calculator (FSM)
+ * Date: 15/08/25
+ * Developer: Baruch Haimson
+ * Reviewer: Tal
+ * Status: In Progress
+ ************************************/
 
-#include "calculator.h"
-#include "stack.h"
+#include <stdlib.h> /* malloc, free */
+#include <string.h> /* strlen */
+#include <assert.h> /* assert */
+#include <math.h> /* pow */
+
+#include "calculator.h" /* calculator API */
+#include "stack.h" /* stack API */
 
 /* ---- Calculator Data ---- */
 typedef struct calc_data
@@ -15,26 +21,25 @@ typedef struct calc_data
     stack_t* nums;
     stack_t* ops;
     int sign; 
-    calc_status_t status;
+    calculator_status_e status;
 } calc_data_t;
 
 /* ---- Operators LUT ---- */
-typedef struct
+typedef struct operator_lut
 {
     int precedence;
     double (*operate)(double, double);
 } operator_lut_t;
 
-/* ---- State Machine ---- */
-typedef calc_status_t (*event_handler_t)(calc_data_t* calc);
-
 /* ---- handlers ---- */
-static calc_status_t handle_number(calc_data_t* calc);
-static calc_status_t handle_operator(calc_data_t* calc);
-static calc_status_t handle_rparen(calc_data_t* calc);
-static calc_status_t handle_lparen(calc_data_t* calc);
-static calc_status_t handle_space(calc_data_t* calc);
-static calc_status_t handle_end(calc_data_t* calc);
+typedef calculator_status_e (*event_handler_t)(calc_data_t* calc);
+
+static calculator_status_e HandleNumber(calc_data_t* calc);
+static calculator_status_e HandleOperator(calc_data_t* calc);
+static calculator_status_e HandleRparen(calc_data_t* calc);
+static calculator_status_e HandleLparen(calc_data_t* calc);
+static calculator_status_e HandleSpace(calc_data_t* calc);
+static calculator_status_e HandleEnd(calc_data_t* calc);
 
 /* ================ Lookup Tables ============================ */
 
@@ -52,43 +57,44 @@ static state_t next_state[NUM_STATES][NUM_EVENTS];
 
 /* ================== Operator Functions ===================== */
 
-static double add(double a, double b) { return a + b; }
-static double sub(double a, double b) { return a - b; }
-static double mul(double a, double b) { return a * b; }
-static double divide(double a, double b) { return a / b; }
-static double power(double a, double b) { return pow(a, b); }
+static double Add(double a, double b) { return a + b; }
+static double Sub(double a, double b) { return a - b; }
+static double Mul(double a, double b) { return a * b; }
+static double Divide(double a, double b) { return a / b; }
+static double Power(double a, double b) { return pow(a, b); }
 
 /* ================== init luts ================================ */
 
-static void init_op_lut(void)
+static void InitOpLut(void)
 {
     operator_lut_t op = { 0 };
 
     op.precedence = 1; 
-    op.operate = add;
+    op.operate = Add;
     op_lut['+'] = op;
 
     op.precedence = 1;
-    op.operate = sub;
+    op.operate = Sub;
     op_lut['-'] = op;
 
     op.precedence = 2;
-    op.operate = mul;
+    op.operate = Mul;
     op_lut['*'] = op;
 
     op.precedence = 2;
-    op.operate = divide;
+    op.operate = Divide;
     op_lut['/'] = op;
 
     op.precedence = 3;
-    op.operate = power; 
+    op.operate = Power; 
     op_lut['^'] = op;
 
 }
 
-static void init_luts(void)
+static void InitSignAndDigitLuts(void)
 {
-    int i;
+    size_t i = 0;
+
     for (i = 0; i < 256; i++)
     {
         sign_lut[i] = 0;
@@ -96,18 +102,20 @@ static void init_luts(void)
     }
 
     sign_lut[(unsigned char)'+'] =  1;
-    sign_lut[(unsigned char)'-'] = (unsigned char)-1; 
+    sign_lut[(unsigned char)'-'] = -1; 
 
     digit_lut[(unsigned char)'.'] = 1;
+
     for (i = '0'; i <= '9'; i++)
     {
         digit_lut[(unsigned char)i] = 1;
     }
 }
 
-static void init_AS(void)
+static void InitAS(void)
 {
-    int i;
+    size_t i = 0;
+
     for (i = 0; i < 256; i++)
     {
         AS[i] = 0;
@@ -115,9 +123,10 @@ static void init_AS(void)
     AS['^'] = 1;
 }
 
-static void init_matching_paren(void)
+static void InitMatchingParen(void)
 {
-    int i;
+    size_t i = 0;
+
     for (i = 0; i < 256; i++)
     {
         matching_paren[i] = '\0';
@@ -132,12 +141,13 @@ static void init_matching_paren(void)
 
 /* ================== init tables ========================= */
 
-static void init_tables(void)
+static void InitTables(void)
 {
-    int i = 0;
+    size_t i = 0;
+
     for (i = 0; i < 256; i++)
     {
-        char_to_event[i] = EVENT_END;
+        char_to_event[i] = EVENT_ERROR;
     }
     for (i = '0'; i <= '9'; i++) 
     {
@@ -152,112 +162,133 @@ static void init_tables(void)
     char_to_event[']'] = EVENT_RPAREN;
     char_to_event['}'] = EVENT_RPAREN;
     char_to_event[' '] = EVENT_SPACE;
+    char_to_event['\t'] = EVENT_SPACE;
     char_to_event['\0'] = EVENT_END;
 
     /* STATE_NUMBER */
-    state_table[STATE_NUMBER][EVENT_DIGIT]    = handle_number;  
+    state_table[STATE_NUMBER][EVENT_DIGIT]    = HandleNumber;  
     next_state[STATE_NUMBER][EVENT_DIGIT]    = STATE_OPERATOR;
 
-    state_table[STATE_NUMBER][EVENT_OPERATOR]    = handle_number; 
+    state_table[STATE_NUMBER][EVENT_OPERATOR]    = HandleNumber; 
     next_state[STATE_NUMBER][EVENT_OPERATOR] = STATE_NUMBER;
 
-    state_table[STATE_NUMBER][EVENT_LPAREN]   = handle_lparen;   
+    state_table[STATE_NUMBER][EVENT_LPAREN]   = HandleLparen;   
     next_state[STATE_NUMBER][EVENT_LPAREN]   = STATE_NUMBER;
 
-    state_table[STATE_NUMBER][EVENT_SPACE]    = handle_space;    
+    state_table[STATE_NUMBER][EVENT_SPACE]    = HandleSpace;    
     next_state[STATE_NUMBER][EVENT_SPACE]    = STATE_NUMBER;
 
-    state_table[STATE_NUMBER][EVENT_END]      = handle_end;      
+    state_table[STATE_NUMBER][EVENT_END]      = HandleEnd;      
     next_state[STATE_NUMBER][EVENT_END]      = STATE_NUMBER;
 
-    state_table[STATE_NUMBER][EVENT_RPAREN]   = handle_rparen;   
+    state_table[STATE_NUMBER][EVENT_RPAREN]   = HandleRparen;   
     next_state[STATE_NUMBER][EVENT_RPAREN]   = STATE_OPERATOR;
 
     /* STATE_OPERATOR */
-    state_table[STATE_OPERATOR][EVENT_OPERATOR] = handle_operator; 
+    state_table[STATE_OPERATOR][EVENT_OPERATOR] = HandleOperator; 
     next_state[STATE_OPERATOR][EVENT_OPERATOR] = STATE_NUMBER;
 
-    state_table[STATE_OPERATOR][EVENT_RPAREN]   = handle_rparen;  
+    state_table[STATE_OPERATOR][EVENT_RPAREN]   = HandleRparen;  
     next_state[STATE_OPERATOR][EVENT_LPAREN] = STATE_NUMBER; 
 
-    state_table[STATE_OPERATOR][EVENT_LPAREN]   = handle_lparen;
+    state_table[STATE_OPERATOR][EVENT_LPAREN]   = HandleLparen;
     next_state[STATE_OPERATOR][EVENT_RPAREN]   = STATE_OPERATOR;
 
-    state_table[STATE_OPERATOR][EVENT_SPACE]    = handle_space;    
+    state_table[STATE_OPERATOR][EVENT_SPACE]    = HandleSpace;    
     next_state[STATE_OPERATOR][EVENT_SPACE]    = STATE_OPERATOR;
 
-    state_table[STATE_OPERATOR][EVENT_END]      = handle_end;      
+    state_table[STATE_OPERATOR][EVENT_END]      = HandleEnd;      
     next_state[STATE_OPERATOR][EVENT_END]      = STATE_OPERATOR;
 }
 
+static void InitALL(void)
+{
+    InitOpLut();             /* Operator table with precedence and function pointers */
+    InitSignAndDigitLuts();  /* Lookup tables for signs (+/-) and digits (0-9, '.') */
+    InitAS();                /* Associativity table */
+    InitMatchingParen();     /* Matching pairs for parentheses/brackets/braces */
+    InitTables();            /* Map characters to events and initialize FSM state tables */
+}
 
 /* ================ Stack Function Helpers ======================= */
 
-static void num_push(stack_t *s, double v)
+static void NumPush(stack_t *s, double v)
 {
     assert(s);
+    assert(StackSize(s) != StackCapacity(s));
 
     StackPush(s, &v);
 }
 
-static double num_pop(stack_t *s)
+static double NumPop(stack_t *s)
 {
-    double val = *(double *)StackPeek(s);
+    double val = 0;
+
+    assert(s);
+    assert(StackSize(s) != 0);
+
+    val = *(double *)StackPeek(s);
+
     StackPop(s);
     return val;
 }
 
-static void op_push(stack_t *s, char c)
+static void OpPush(stack_t *s, char c)
 {
     assert(s);
+    assert(StackSize(s) != StackCapacity(s));
 
     StackPush(s, &c);
 }
 
-static char op_pop(stack_t *s)
+static char OpPop(stack_t *s)
 {
-    char val = *(char *)StackPeek(s);
+    char val = 0;
+
+    assert(s);
+    assert(StackSize(s) != 0);
+
+    val = *(char *)StackPeek(s);
+    
     StackPop(s);
     return val;
 }
 
-static char op_peek(stack_t *s)
+static char OpPeek(stack_t *s)
 {
     return *(char *)StackPeek(s);
 }
 
-static void apply_top_op(calc_data_t* calc)
+static void ApplyTop(calc_data_t* calc)
 {
     double b = 0.0;
     double a = 0.0;
     char op = 0;
 
-    if (StackSize(calc->ops) < 1 || StackSize(calc->nums) < 2)
+    if (StackSize(calc->ops) < 1)
     {
-        calc->status = CALC_SYNTAX_ERROR;
+        calc->status = SYNTAX_ERROR;
         return;
     }
 
-    b = num_pop(calc->nums);
-    a = num_pop(calc->nums);
-    op = op_pop(calc->ops);
+    b = NumPop(calc->nums);
+    a = NumPop(calc->nums);
+    op = OpPop(calc->ops);
 
-    if (op == '/' && b == 0.0)
+    if ((op == '/' && b == 0.0) || (op == '^' && a == 0.0 && b <= 0.0))
     {
-        calc->status = CALC_ARITHMETIC_ERROR;
+        calc->status = MATH_ERROR;
         return; 
     }
-    num_push(calc->nums, op_lut[(unsigned char)op].operate(a, b));
+    NumPush(calc->nums, op_lut[(unsigned char)op].operate(a, b));
 }
 
 /* ========================== Handlers ======================================= */
 
-static calc_status_t handle_number(calc_data_t* calc)
+static calculator_status_e HandleNumber(calc_data_t* calc)
 {
     int sign = 1;
     double val = 0.0;
-
-    init_luts();
 
     while (sign_lut[(unsigned char)*calc->p])
     {
@@ -265,150 +296,146 @@ static calc_status_t handle_number(calc_data_t* calc)
         calc->p++;
     }
 
-    calc->status = (digit_lut[(unsigned char)*calc->p] ? CALC_SUCCESS : CALC_SYNTAX_ERROR);
+    calc->status = (digit_lut[(unsigned char)*calc->p] ? SUCCESS : SYNTAX_ERROR);
 
     val = strtod(calc->p, (char**)&calc->p);
 
-    num_push(calc->nums, val * sign);
+    NumPush(calc->nums, val * sign);
     return calc->status;
 }
 
-static calc_status_t handle_operator(calc_data_t* calc)
+static calculator_status_e HandleOperator(calc_data_t* calc)
 {
     char op = *calc->p;
 
-    init_AS();
-
-    while (StackSize(calc->ops) > 0 && (op_lut[(unsigned char)op_peek(calc->ops)].precedence >= op_lut[(unsigned char)op].precedence + AS[(unsigned char)op_peek(calc->ops)]))
+    while (StackSize(calc->ops) > 0 && (op_lut[(unsigned char)OpPeek(calc->ops)].precedence >= op_lut[(unsigned char)op].precedence + AS[(unsigned char)OpPeek(calc->ops)]))
     {
-        apply_top_op(calc);
+        ApplyTop(calc);
     }
 
-    if (calc->status != CALC_SUCCESS)
+    if (calc->status != SUCCESS)
     {
         return calc->status;
     }
-    op_push(calc->ops, op);
+
+    OpPush(calc->ops, op);
     calc->p++;
-    return CALC_SUCCESS;
+    return SUCCESS;
 }
 
 
 
 
-static calc_status_t handle_lparen(calc_data_t* calc)
+static calculator_status_e HandleLparen(calc_data_t* calc)
 {
     char lparen = 0;
 
-    init_matching_paren();
-
     lparen = matching_paren[(unsigned char)*calc->p];
 
-    op_push(calc->ops, lparen);
-
+    OpPush(calc->ops, lparen);
     calc->p++;
-
     return calc->status;
 }
 
 
-static calc_status_t handle_rparen(calc_data_t* calc)
+static calculator_status_e HandleRparen(calc_data_t* calc)
 {
     char lparen = 0;
 
-    init_matching_paren();
-
     lparen = matching_paren[(unsigned char)*calc->p];
 
-    while (calc->status == CALC_SUCCESS && StackSize(calc->ops) > 0 && op_peek(calc->ops) != lparen)
+    while (calc->status == SUCCESS && StackSize(calc->ops) > 0 && OpPeek(calc->ops) != lparen)
     {
-        if (matching_paren[(unsigned char)op_peek(calc->ops)] == op_peek(calc->ops))
+        if (matching_paren[(unsigned char)OpPeek(calc->ops)] == OpPeek(calc->ops))
         {
-            return CALC_SYNTAX_ERROR;
+            return SYNTAX_ERROR;
         }
-        apply_top_op(calc);    
+        ApplyTop(calc);    
     }
     
     if (StackSize(calc->ops) == 0)
     {
-        return CALC_SYNTAX_ERROR;
+        return SYNTAX_ERROR;
     }
-    op_pop(calc->ops); /* remove '(' */
+
+    OpPop(calc->ops); 
     calc->p++;
-    return CALC_SUCCESS;
+    return SUCCESS;
 }
 
-static calc_status_t handle_space(calc_data_t* calc)
+static calculator_status_e HandleSpace(calc_data_t* calc)
 {
     calc->p++;
-    return CALC_SUCCESS;
+    return SUCCESS;
 }
 
-static calc_status_t handle_end(calc_data_t* calc)
+static calculator_status_e HandleEnd(calc_data_t* calc)
 {
     while (StackSize(calc->ops) > 0)
     {
-        if(calc->status != CALC_SUCCESS)
+        if(calc->status != SUCCESS)
         {
             return calc->status;
         }
-        if (op_peek(calc->ops) == '(' || op_peek(calc->ops) == '[' || op_peek(calc->ops) == '{') 
+        if (OpPeek(calc->ops) == '(' || OpPeek(calc->ops) == '[' || OpPeek(calc->ops) == '{') 
         {
-            calc->status = CALC_SYNTAX_ERROR;
+            calc->status = SYNTAX_ERROR;
             return calc->status;  
         }
        
-        apply_top_op(calc);
+        ApplyTop(calc);
     }
     return calc->status;
 }
 
 /* ---- Public API ---- */
-calc_status_t Calculator(const char *expression, double *res)
+calculator_status_e Calculator(const char *expression, double *res)
 {
     calc_data_t* calc = NULL;
     state_t state = STATE_NUMBER;
     event_t ev = EVENT_END;
     event_handler_t handler = NULL;
+    calculator_status_e status = SUCCESS;
     size_t len = 0;
+
+    assert(expression);
+
+    InitALL();
 
     len = strlen(expression);
     
     calc = malloc(sizeof(calc_data_t));
     if (!calc)
     {
-        return CALC_SYNTAX_ERROR;
+        return ALLOC_ERROR;
     }
     
     calc->nums = NULL;
     calc->ops = NULL;
-    calc->status = CALC_SUCCESS;
+    calc->status = SUCCESS;
     calc->p = expression;
     
     calc->nums = StackCreate(len, sizeof(double));
     if (!calc->nums)
     {
         free(calc);
-        return CALC_SYNTAX_ERROR;
+        return ALLOC_ERROR;
     }
     calc->ops  = StackCreate(len, sizeof(char));
     if (!calc->ops)
     {
         StackDestroy(calc->nums);
         free(calc);
-        return CALC_SYNTAX_ERROR;
+        return ALLOC_ERROR;
     }
     
-    init_op_lut();
-    init_tables();
-
-    while (calc->status == CALC_SUCCESS)
+    while (calc->status == SUCCESS)
     {
         ev = char_to_event[(unsigned char)*calc->p];
         handler = state_table[state][ev];
         if (!handler)
         {
-            calc->status = CALC_SYNTAX_ERROR;
+            calc->status = SYNTAX_ERROR;
             break;
         }
 
@@ -422,16 +449,20 @@ calc_status_t Calculator(const char *expression, double *res)
         }
     }
 
-    if (calc->status == CALC_SUCCESS && StackSize(calc->nums) == 1)
+    if (calc->status == SUCCESS && StackSize(calc->nums) == 1)
     {
-        *res = num_pop(calc->nums);
+        *res = NumPop(calc->nums);
     }
-    else if (calc->status == CALC_SUCCESS)
+    else if (calc->status == SUCCESS)
     {
-        calc->status = CALC_SYNTAX_ERROR;
+        calc->status = SYNTAX_ERROR;
     }
+
+    status = calc->status;
 
     StackDestroy(calc->nums);
     StackDestroy(calc->ops);
-    return calc->status;
+    free(calc);
+
+    return status;
 }
