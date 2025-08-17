@@ -6,10 +6,16 @@
  * Status: In Progress
  ************************************/
 
-#include <string.h>  /* StrStr */
-#include "recursion.h"
+#include <string.h> /* strncmp*/
 
-int FibonacciRec(int n)
+#include "recursion.h" /* API */
+#include "stack.h"   /* StackPeek */
+
+#define MAX_MEMO (1000)
+
+int mem[MAX_MEMO];
+
+int FibonacciRec(size_t n)
 {
     if (n == 0) 
     {
@@ -20,10 +26,32 @@ int FibonacciRec(int n)
         return 1; 
     }
 
-    return FibonacciRec(n - 1) + FibonacciRec(n - 2);
+    return FibonacciMemo(n - 1) + FibonacciMemo(n - 2);
+}
+int FibonacciMemo(size_t n)   
+{
+    if (n == 0) 
+    {
+        return 0; 
+    } 
+    if (n == 1) 
+    {
+        return 1; 
+    }
+
+    if (mem[n] != -1)
+    {
+        return mem[n];
+    }
+
+    mem[n] = FibonacciMemo(n - 1) + FibonacciMemo(n - 2);
+
+    return mem[n];
+
+    return -1;
 }
 
-int FibonacciIter(int n)
+int FibonacciIter(size_t n)
 {
     int prevprev = 0;
     int prev = 1; 
@@ -48,9 +76,9 @@ int FibonacciIter(int n)
     return current;
 }
 
-Node* FlipList(Node* node)
+node_t* FlipList(node_t* node)
 {
-    Node* new_head = NULL;
+    node_t* new_head = NULL;
 
     if (!node || !node->next) 
     { 
@@ -97,6 +125,7 @@ char* StrCpy(char* dest, const char* src)
     }
 
     *dest = *src;
+
     StrCpy(dest + 1, src + 1);
 
     return dest;
@@ -104,12 +133,13 @@ char* StrCpy(char* dest, const char* src)
 
 char* StrCat(char* dest, const char* src)
 {
-    while (*dest) 
+    if (*dest == '\0')  
     {
-        dest++;
+        StrCpy(dest, src); 
+        return dest;
     }
 
-    StrCpy(dest, src);
+    StrCat(dest + 1, src); 
 
     return dest;
 }
@@ -131,4 +161,36 @@ char* StrStr(const char* haystack, const char* needle)
     }
 
     return StrStr(haystack + 1, needle);
+}
+
+static void InsertSorted(stack_t* s, int value)
+{
+    int temp = 0;
+
+    if (StackIsEmpty(s) || value > *(int*)StackPeek(s))
+    {
+        StackPush(s, &value);
+        return;
+    }
+
+    temp = *(int*)StackPeek(s);
+    StackPop(s);
+    InsertSorted(s, value);
+    StackPush(s, &temp);
+}
+
+void SortStack(stack_t* s)
+{
+    int top = 0;
+
+    if (!StackIsEmpty(s))
+    {
+        top = *(int*)StackPeek(s);
+
+        StackPop(s);
+
+        SortStack(s);
+
+        InsertSorted(s, top);
+    }
 }
