@@ -81,7 +81,7 @@ void AVLRemove(avl_t* tree, const void* data)
 {
     assert(tree);
     
-    RemoveRec(tree->root, (void*)data, tree->cmp);
+    tree->root = RemoveRec(tree->root, (void*)data, tree->cmp);
 }
 
 int AVLInsert(avl_t* tree, void* data)
