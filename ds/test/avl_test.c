@@ -2,8 +2,8 @@
  * Exercise: AVL 
  * Date: 18/08/25
  * Developer: Baruch Haimson
- * Reviewer: 
- * Status: In Progress
+ * Reviewer: Menny
+ * Status: Aprroved
  ************************************/
 
 #include <stdio.h>
@@ -241,3 +241,4 @@ int PrintNode(void* data, void* param)
     printf("%d ", *(int*)data);
     return 0;
 }
+

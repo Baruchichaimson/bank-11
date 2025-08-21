@@ -2,14 +2,14 @@
  * Exercise: AVL 
  * Date: 18/08/25
  * Developer: Baruch Haimson
- * Reviewer: 
- * Status: In Progress
+ * Reviewer: Menny
+ * Status: Aprroved
  ************************************/
 
-#include <stdlib.h> /* malloc, free */
+#include <stdlib.h> /* malloc */
 #include <assert.h> /* assert */
 
-#include "avl.h"
+#include "avl.h" /* API */
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -37,7 +37,7 @@ struct avl_node
 
 /*==================== Helper Functions ============================================*/
 
-static void DestroyNodes(avl_node_t* node);
+static void DestroyRec(avl_node_t* node);
 static size_t NodeHeight(avl_node_t* node);
 static int Balance(avl_node_t* node);
 static avl_node_t* RotateRight(avl_node_t* y);
@@ -45,8 +45,8 @@ static avl_node_t* RotateLeft(avl_node_t* node);
 static void UpdateHeight(avl_node_t* node);
 static avl_node_t* RemoveRec(avl_node_t* node, void* data, cmp_func_t cmp);
 static avl_node_t* InsertRec(avl_node_t* node, void* data, cmp_func_t cmp, int* status);
-static size_t CountNodes(avl_node_t* node);
-static avl_node_t* AVLFindNode(avl_node_t* node, void* data, cmp_func_t cmp);
+static size_t CountRec(avl_node_t* node);
+static void* AVLFindRec(avl_node_t* node, void* data, cmp_func_t cmp);
 static int ForEachRec(avl_node_t* node, int traversal_type, action_func_t action_func, void* param);
 
 /*==================================================================================*/
@@ -71,10 +71,9 @@ void AVLDestroy(avl_t* tree)
 {
     assert(tree);
 
-    DestroyNodes(tree->root);
+    DestroyRec(tree->root);
 
     free(tree);
-    tree = NULL;
 }
 
 void AVLRemove(avl_t* tree, const void* data)
@@ -88,6 +87,8 @@ int AVLInsert(avl_t* tree, void* data)
 {
     int status = 0;
 
+    assert(tree);
+
     tree->root = InsertRec(tree->root, data, tree->cmp, &status);
 
     return status;
@@ -100,28 +101,21 @@ size_t AVLHeight(const avl_t* tree)
 
 size_t AVLCount(const avl_t* tree)
 {
-    if (!tree)
-    {
-        return 0;
-    }
+    assert(tree);
 
-    return CountNodes(tree->root);
+    return CountRec(tree->root);
 }
 
 int AVLIsEmpty(const avl_t* tree)
 {
-    return (tree->root == NULL);
+    return (!tree->root);
 }
 
 void* AVLFind(const avl_t* tree, const void* data)
 {
-    avl_node_t* found = NULL;
-
     assert(tree);
 
-    found = AVLFindNode(tree->root, (void*)data, tree->cmp);
-
-    return found ? found->data : NULL;
+    return AVLFindRec(tree->root, (void*)data, tree->cmp);
 }
 
 int AVLForEach(avl_t* tree, int traversal_type, action_func_t action_func, void* param)
@@ -134,24 +128,23 @@ int AVLForEach(avl_t* tree, int traversal_type, action_func_t action_func, void*
 
 /*==================== Helper Functions ============================================*/
 
-static void DestroyNodes(avl_node_t* node)
+static void DestroyRec(avl_node_t* node)
 {
     if (!node)
     {
         return;
     }
 
-    DestroyNodes(node->children[LEFT]);
-    DestroyNodes(node->children[RIGHT]);
+    DestroyRec(node->children[LEFT]);
+    DestroyRec(node->children[RIGHT]);
 
     free(node);
-    node = NULL;
 }
 
 
 static size_t NodeHeight(avl_node_t* node)
 {
-    return (node == NULL) ? 0 : node->height;
+    return (!node) ? 0 : node->height;
 }
 
 static avl_node_t* InsertRec(avl_node_t* node, void* data, cmp_func_t cmp, int* status)
@@ -159,8 +152,9 @@ static avl_node_t* InsertRec(avl_node_t* node, void* data, cmp_func_t cmp, int* 
     avl_node_t* new_node = NULL;
     int cmp_res = 0;
     int balance = 0;
+    *status = 0;
 
-    if (node == NULL)
+    if (!node)
     {
         new_node = (avl_node_t*)malloc(sizeof(avl_node_t));
         if (!new_node)
@@ -172,6 +166,7 @@ static avl_node_t* InsertRec(avl_node_t* node, void* data, cmp_func_t cmp, int* 
         new_node->children[LEFT] = NULL;
         new_node->children[RIGHT] = NULL;
         new_node->height = 1;
+
         return new_node;
     }
 
@@ -224,7 +219,6 @@ static avl_node_t* RemoveRec(avl_node_t* node, void* data, cmp_func_t cmp)
 {
     avl_node_t* successor = NULL;
     avl_node_t* child = NULL;
-    void* tmp = NULL;
     int cmp_res = 0;
     int balance = 0;
 
@@ -260,11 +254,9 @@ static avl_node_t* RemoveRec(avl_node_t* node, void* data, cmp_func_t cmp)
                 successor = successor->children[LEFT];
             }
 
-            tmp = node->data;
             node->data = successor->data;
-            successor->data = tmp;
 
-            node->children[RIGHT] = RemoveRec(node->children[RIGHT], data, cmp);
+            node->children[RIGHT] = RemoveRec(node->children[RIGHT], successor->data, cmp);
         }
     }
 
@@ -292,12 +284,18 @@ static avl_node_t* RemoveRec(avl_node_t* node, void* data, cmp_func_t cmp)
         return RotateLeft(node);
     }
 
+
     return node;
 }
 
 
 static int Balance(avl_node_t* node)
 {
+    if (!node) 
+    { 
+        return 0; 
+    }
+
     return (NodeHeight(node->children[LEFT]) - NodeHeight(node->children[RIGHT]));
 }
 
@@ -339,17 +337,17 @@ static void UpdateHeight(avl_node_t* node)
     node->height = 1 + MAX(NodeHeight(node->children[LEFT]), NodeHeight(node->children[RIGHT]));
 }
 
-static size_t CountNodes(avl_node_t* node)
+static size_t CountRec(avl_node_t* node)
 {
     if (!node)
     {
         return 0;
     }
 
-    return 1 + CountNodes(node->children[LEFT]) + CountNodes(node->children[RIGHT]);
+    return 1 + CountRec(node->children[LEFT]) + CountRec(node->children[RIGHT]);
 }
 
-static avl_node_t* AVLFindNode(avl_node_t* node, void* data, cmp_func_t cmp)
+static void* AVLFindRec(avl_node_t* node, void* data, cmp_func_t cmp)
 {
     int cmp_res = 0;
 
@@ -362,15 +360,15 @@ static avl_node_t* AVLFindNode(avl_node_t* node, void* data, cmp_func_t cmp)
 
     if (cmp_res == 0) 
     {
-        return node;
+        return node->data;;
     }
     else if (cmp_res < 0)
     {
-        return AVLFindNode(node->children[LEFT], data, cmp);
+        return AVLFindRec(node->children[LEFT], data, cmp);
     }
     else
     {
-        return AVLFindNode(node->children[RIGHT], data, cmp);
+        return AVLFindRec(node->children[RIGHT], data, cmp);
     }
 }
 

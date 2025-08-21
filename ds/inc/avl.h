@@ -2,8 +2,8 @@
  * Exercise: AVL 
  * Date: 18/08/25
  * Developer: Baruch Haimson
- * Reviewer: 
- * Status: In Progress
+ * Reviewer: Menny
+ * Status: Aprroved
  ************************************/
 
 #ifndef __ILRD_AVL_H__
