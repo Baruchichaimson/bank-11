@@ -1,17 +1,27 @@
-#include <stdlib.h>
-#include <assert.h>
+/************************************
+ * Exercise: hash table 
+ * Date: 21/08/25
+ * Developer: Baruch Haimson
+ * Reviewer: daniel
+ * Status: Aprroved
+ ************************************/
+#include <stdlib.h> /* malloc */
+#include <assert.h> /* assert */
 
-#include "hash_table.h"
+#include "hash_table.h" /* API */
 
 hash_table_t* HashTableCreate(hash_func_t hash_func, size_t capacity, is_match_func_t is_match)
 {
     size_t i = 0;
     hash_table_t* table = NULL;
 
-
     assert(hash_func);
     assert(is_match);
 
+    if (capacity == 0)
+    {
+        return NULL;
+    }
 
     table = (hash_table_t*)malloc(sizeof(hash_table_t));
     if (!table)
@@ -19,11 +29,9 @@ hash_table_t* HashTableCreate(hash_func_t hash_func, size_t capacity, is_match_f
         return NULL;
     }
 
-
     table->capacity = capacity;
     table->hash_func = hash_func;
     table->is_match = is_match;
-
 
     table->buckets = (sll_t**)malloc(sizeof(sll_t*) * capacity);
     if (!table->buckets)
@@ -31,7 +39,6 @@ hash_table_t* HashTableCreate(hash_func_t hash_func, size_t capacity, is_match_f
         free(table);
         return NULL;
     }
-
 
     for (i = 0; i < capacity; ++i)
     {
@@ -59,13 +66,15 @@ void HashTableDestroy(hash_table_t* table)
     {
         return;
     }
-
-    for (i = 0; i < table->capacity; ++i)
+    if (table->buckets)
     {
-        SLLDestroy(table->buckets[i]);
-    }
+        for (i = 0; i < table->capacity; ++i)
+        {
+            SLLDestroy(table->buckets[i]);
+        }
 
-    free(table->buckets);
+        free(table->buckets);
+    }
     free(table);
 }
 
@@ -73,22 +82,25 @@ void HashTableDestroy(hash_table_t* table)
 int HashTableInsert(hash_table_t* table, void* data)
 {
     size_t index = 0;
+    sll_iter_t found = { NULL };
     sll_t* bucket = NULL;
-
 
     assert(table);
     assert(data);
 
-
     index = table->hash_func(data) % table->capacity;
     bucket = table->buckets[index];
 
+    assert(bucket);
+
+    found = SLLFind(SLLBegin(bucket), SLLEnd(bucket), table->is_match, data);
+
+    assert(SLLIsEqual(found, SLLEnd(bucket)));
 
     if (!SLLInsert(SLLEnd(bucket), data))
     {
         return 1;
     }
-
 
     return 0; 
 }
@@ -96,7 +108,7 @@ int HashTableInsert(hash_table_t* table, void* data)
 void HashTableRemove(hash_table_t* table, const void* data)
 {
     size_t index = 0;
-    sll_iter_t iter;
+    sll_iter_t iter = { NULL };
     sll_t* bucket = NULL;
 
 
@@ -107,6 +119,7 @@ void HashTableRemove(hash_table_t* table, const void* data)
     index = table->hash_func(data) % table->capacity;
     bucket = table->buckets[index];
 
+    assert(bucket);
 
     iter = SLLFind(SLLBegin(bucket), SLLEnd(bucket), table->is_match, (void*)data);
 
@@ -124,14 +137,13 @@ void* HashTableFind(const hash_table_t* table, const void* data)
     sll_iter_t iter;
     sll_t* bucket = NULL;
 
-
     assert(table);
     assert(data);
-
 
     index = table->hash_func(data) % table->capacity;
     bucket = table->buckets[index];
 
+    assert(bucket);
 
     iter = SLLFind(SLLBegin(bucket), SLLEnd(bucket), table->is_match, (void*)data);
 
@@ -141,15 +153,15 @@ void* HashTableFind(const hash_table_t* table, const void* data)
 
 size_t HashTableSize(const hash_table_t* table)
 {
-    size_t i = 0, size = 0;
-    assert(table);
+    size_t i = 0;
+    size_t size = 0;
 
+    assert(table);
 
     for (i = 0; i < table->capacity; ++i)
     {
         size += SLLCount(table->buckets[i]);
     }
-
 
     return size;
 }
@@ -158,8 +170,8 @@ size_t HashTableSize(const hash_table_t* table)
 int HashTableIsEmpty(const hash_table_t* table)
 {
     size_t i = 0;
-    assert(table);
 
+    assert(table);
 
     for (i = 0; i < table->capacity; ++i)
     {
@@ -174,6 +186,7 @@ int HashTableIsEmpty(const hash_table_t* table)
 int HashTableForEach(hash_table_t* table, action_func_t action_func, void* param)
 {
     size_t i = 0;
+
     assert(table);
     assert(action_func);
 
@@ -186,4 +199,46 @@ int HashTableForEach(hash_table_t* table, action_func_t action_func, void* param
         }
     }
     return 0;
+}
+
+/*================== Advance ======================*/
+
+void* HashTableFindMoveFront(hash_table_t* table, const void* data)
+{
+    size_t index;
+    sll_iter_t iter;
+    sll_t* bucket;
+    void* found_data;
+
+    assert(table);
+    assert(data);
+
+    index = table->hash_func(data) % table->capacity;
+    bucket = table->buckets[index];
+
+    assert(bucket);
+
+    iter = SLLFind(SLLBegin(bucket), SLLEnd(bucket), table->is_match, (void*)data);
+
+    if (SLLIsEqual(iter, SLLEnd(bucket)))
+    {
+        return NULL; 
+    }
+
+    found_data = SLLGetData(iter);
+
+    SLLRemove(iter);
+    SLLInsert(SLLBegin(bucket), found_data);
+
+    return found_data;
+}
+
+double HashTableLoadFactor(const hash_table_t* table)
+{
+    size_t num_elements;
+
+    assert(table);
+
+    num_elements = HashTableSize(table);
+    return ((double)num_elements) / table->capacity;
 }

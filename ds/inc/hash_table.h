@@ -42,6 +42,10 @@ int HashTableIsEmpty(const hash_table_t* table);
 /* O(n+m) */
 int HashTableForEach(hash_table_t* table, action_func_t action_func, void* param);
 
+void* HashTableFindMoveFront(hash_table_t* table, const void* data);
+
+double HashTableLoadFactor(const hash_table_t* table);
+
 #endif /* ILRD_HASH_TABLE_H */
 
 

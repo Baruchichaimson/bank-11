@@ -1,25 +1,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-
+#include <string.h>
 
 #include "hash_table.h"
 #include "sll.h"
 
-/******************** Test Helpers ********************/
+#define DICT_FILE ("/usr/share/dict/words")
+#define MAX_WORD_LEN (256)
 
+/******************** Test Helpers ********************/
 
 static size_t HashFuncInt(const void* data)
 {
     return (*(int*)data);
 }
 
-
 static int IsMatchInt(const void* data1, void* data2)
 {
     return (*(int*)data1 == *(int*)data2);
 }
-
 
 static int PrintAction(void* table_data, void* param)
 {
@@ -28,8 +28,86 @@ static int PrintAction(void* table_data, void* param)
     return 0;
 }
 
+/******************** String Helpers for Dictionary ********************/
 
-/******************** Unit Tests ********************/
+static size_t HashFuncString(const void* data)
+{
+    const char* str = (const char*)data;
+    size_t hash = 5381;
+    int c;
+    while ((c = *str++))
+    {
+        hash = ((hash << 5) + hash) + c;
+    }
+    return hash;
+}
+
+static int IsMatchString(const void* data1, void* data2)
+{
+    return strcmp((const char*)data1, (const char*)data2) == 0;
+}
+
+static int FreeString(void* table_data, void* param)
+{
+    (void)param;
+    free(table_data);
+    return 1;
+}
+
+/******************** Dictionary Functions ********************/
+
+hash_table_t* LoadDictionary(const char* filename)
+{
+    char buffer[MAX_WORD_LEN];
+    hash_table_t* table = NULL;
+    FILE* file = fopen(filename, "r");
+    char* word = NULL;
+    if (!file) 
+    {
+        return NULL;
+    }
+
+    table = HashTableCreate(HashFuncString, 10000, IsMatchString);
+    if (!table) 
+    {
+        fclose(file);
+        return NULL;
+    }
+
+    
+    while (fgets(buffer, MAX_WORD_LEN, file))
+    {
+        buffer[strcspn(buffer, "\n")] = 0; 
+
+        word = malloc(strlen(buffer) + 1);  
+        if (word)
+        {
+            strcpy(word, buffer);
+        }
+    
+        HashTableInsert(table, word);
+    }
+
+    fclose(file);
+    return table;
+}
+
+void SpellChecker(hash_table_t* dict)
+{
+    char word[MAX_WORD_LEN];
+    printf("Enter a word: ");
+    if (scanf("%255s", word) != 1) return;
+
+    if (HashTableFind(dict, word))
+    {
+        printf("Correct\n");
+    }
+    else
+    {
+        printf("Incorrect\n");
+    }
+}
+
 void TestHashTableCreate()
 {
     hash_table_t* table = NULL;
@@ -47,7 +125,6 @@ void TestHashTableCreate()
     printf("PASS\n");
 }
 
-
 void TestHashTableDestroy()
 {
     hash_table_t* table = NULL;
@@ -59,7 +136,6 @@ void TestHashTableDestroy()
     HashTableDestroy(table);
     printf("PASS (no crash)\n");
 }
-
 
 void TestHashTableInsert()
 {
@@ -74,7 +150,7 @@ void TestHashTableInsert()
     assert(HashTableSize(table)==3);
     HashTableDestroy(table);
     printf("PASS\n");
-    }
+}
 
 void TestHashTableRemove()
 {
@@ -97,7 +173,6 @@ void TestHashTableRemove()
     printf("PASS\n");
 }
 
-
 void TestHashTableFind()
 {
     hash_table_t* table = NULL;
@@ -113,7 +188,6 @@ void TestHashTableFind()
     HashTableDestroy(table);
     printf("PASS\n");
 }
-
 
 void TestHashTableSize()
 {
@@ -133,7 +207,6 @@ void TestHashTableSize()
     printf("PASS\n");
 }
 
-
 void TestHashTableIsEmpty()
 {
     hash_table_t* table = NULL;
@@ -149,7 +222,6 @@ void TestHashTableIsEmpty()
     HashTableDestroy(table);
     printf("PASS\n");
 }
-
 
 void TestHashTableForEach()
 {
@@ -168,9 +240,61 @@ void TestHashTableForEach()
     printf("PASS\n");
 }
 
+/*================== Advance ======================*/
+
+void TestHashTableFindMoveToFront()
+{
+    hash_table_t* table = NULL;
+    sll_t* bucket = NULL;
+    sll_iter_t iter = { NULL };
+    int a = 1;
+    int b = 6;
+
+    printf("--- TestHashTableFindMoveToFront ---\n");
+
+    table = HashTableCreate(HashFuncInt, 5, IsMatchInt);
+
+    HashTableInsert(table, &a);
+    HashTableInsert(table, &b);
+
+    assert(HashTableFindMoveFront(table, &a) == &a);
+    assert(HashTableFindMoveFront(table, &b) == &b);
+
+    bucket = table->buckets[table->hash_func(&a) % table->capacity];
+    iter = SLLBegin(bucket);
+    assert(SLLGetData(iter) == &b); 
+
+    HashTableDestroy(table);
+    printf("PASS\n");
+}
+
+
+void TestHashTableLoadFactor()
+{
+    hash_table_t* table = NULL;
+    int a = 1;
+    int b = 2;
+    int c = 3;
+    printf("--- TestHashTableLoadFactor ---\n");
+
+    table = HashTableCreate(HashFuncInt, 5, IsMatchInt);
+    assert(table);
+
+    assert(HashTableLoadFactor(table) == 0.0);
+
+    HashTableInsert(table, &a);
+    HashTableInsert(table, &b);
+    HashTableInsert(table, &c);
+
+    assert(HashTableLoadFactor(table) == 0.6);
+
+    HashTableDestroy(table);
+    printf("PASS\n");
+}
 
 int main()
 {
+    hash_table_t* dict = NULL;
     TestHashTableCreate();
     TestHashTableDestroy();
     TestHashTableInsert();
@@ -180,5 +304,19 @@ int main()
     TestHashTableIsEmpty();
     TestHashTableForEach();
 
+    printf("\n--- Dictionary / Spell Checker Test ---\n");
+    dict = LoadDictionary(DICT_FILE);
+    if (!dict)
+    {
+        printf("Failed to load dictionary.\n");
+        return 1;
+    }
+    SpellChecker(dict);
+
+    HashTableForEach(dict, FreeString, NULL);
+    HashTableDestroy(dict);
+
+    TestHashTableFindMoveToFront();
+    TestHashTableLoadFactor();
     return 0;
 }

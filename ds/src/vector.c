@@ -22,12 +22,14 @@ struct Vector
 
 vector_t* VectorCreate(size_t init_capacity, size_t element_size)
 {
+    vector_t* vec = NULL;
+
 	if (element_size == 0)
     {
         return NULL;
     }
     
-    vector_t* vec = (vector_t*)malloc(sizeof(vector_t));
+    vec = (vector_t*)malloc(sizeof(vector_t));
     if (!vec)
     { 
     	return NULL;
