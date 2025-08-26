@@ -15,7 +15,7 @@ int HeapPush(heap_t* heap, void* data);
 
 void HeapPop(heap_t* heap);
 
-void HeapRemove(heap_t* heap, const void* data, is_match_func func);
+void* HeapRemove(heap_t* heap, const void* data, is_match_func func);
 
 int HeapIsEmpty(const heap_t* heap);
 

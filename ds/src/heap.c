@@ -104,6 +104,7 @@ void HeapRemove(heap_t* heap, const void* data, is_match_func func)
     void **curr = NULL;
     void **last = NULL;
     size_t size = VectorSize(heap->vector);
+    void *removed = NULL;
 
     assert(heap);
 
@@ -112,7 +113,10 @@ void HeapRemove(heap_t* heap, const void* data, is_match_func func)
         curr = VectorGetAccessToElement(heap->vector, i);
         if (func(*curr, data))
         {
+            removed = *curr;
+
             last = VectorGetAccessToElement(heap->vector, size - 1);
+
             *curr = *last;
             VectorPopBack(heap->vector);
 
@@ -121,9 +125,10 @@ void HeapRemove(heap_t* heap, const void* data, is_match_func func)
                 HeapifyDown(heap, i);
                 HeapifyUp(heap, i);
             }
-            return;
+            return removed;
         }
     }
+    return NULL;
 }
 
 int HeapIsEmpty(const heap_t* heap)
