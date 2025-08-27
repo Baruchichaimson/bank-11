@@ -25,12 +25,13 @@ struct task
 
 task_t* TaskCreate(ssize_t (*op_func)(void *param),  void *op_param,size_t interval_in_sec,void (*cleanup_func)(void* param),void* cleanup_param)
 {
+	ilrd_uid_t uid;
 	task_t* task = (task_t*)malloc(sizeof(task_t));
 	if(!task)
 	{
 		return NULL;
 	}
-	ilrd_uid_t uid = UIDCreate();
+	uid = UIDCreate();
 	if(UIDIsSame(uid, UIDbadUID))
 	{
 		free(task);

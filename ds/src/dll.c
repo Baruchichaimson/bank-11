@@ -119,9 +119,11 @@ void DLLSetData(dll_iter_t iter, void* data)
 
 dll_iter_t DLLInsert(dll_t* list, dll_iter_t where, void* data)
 {
+    dll_iter_t new_node;
+
     assert(IterToNode(where));
     
-    dll_iter_t new_node = CreateNode(data);
+    new_node = CreateNode(data);
     if (!new_node)
     {
         return DLLEnd(list);
@@ -162,24 +164,32 @@ dll_iter_t DLLPushBack(dll_t* list, void* data)
 
 void* DLLPopFront(dll_t* list)
 {
+    void* data = NULL;
+
     assert(list);
-    void* data = DLLGetData(DLLBegin(list));
+
+    data = DLLGetData(DLLBegin(list));
     DLLRemove(DLLBegin(list));
     return data;
 }
 
 void* DLLPopBack(dll_t* list)
 {
+    void* data = NULL;
+
     assert(list);
-    void* data = DLLGetData(DLLPrev(DLLEnd(list)));
+
+    data = DLLGetData(DLLPrev(DLLEnd(list)));
     DLLRemove(DLLPrev(DLLEnd(list)));
     return data;
 }
 
 size_t DLLCount(const dll_t* list)
 {
-    assert(list);
     size_t counter = 0;
+    
+    assert(list);
+    
     DLLForEach(DLLBegin(list), DLLEnd(list), Count, &counter);
     return counter;
 }
@@ -210,8 +220,9 @@ dll_iter_t DLLFind(dll_iter_t from, dll_iter_t to, int (*is_match_func_t)(const 
 
 int DLLMultiFind(dll_iter_t from, dll_iter_t to, int (*is_match_func_t)(const void*, const void*), const void* param, dll_t* output)
 {
+    int amount_faliures = 0;
 	from = DLLFind(from ,to , is_match_func_t ,param);
-	int amount_faliures = 0;
+	
 	
     assert(from);
     assert(to);

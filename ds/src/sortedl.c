@@ -64,7 +64,8 @@ void SortedLDestroy(sortedl_t* list)
 sorted_iter_t SortedLInsert(sortedl_t* list, void* data)
 {
     sorted_iter_t iter_for_insert;
-    
+    dll_iter_t pos;
+
 	cmp_h* cmp_handler = (cmp_h*)malloc(sizeof(cmp_h));
 	cmp_handler->cmp = list->cmp;
 	cmp_handler->data= data;
@@ -76,7 +77,7 @@ sorted_iter_t SortedLInsert(sortedl_t* list, void* data)
 
     assert(list);
     
-	dll_iter_t pos = DLLFind(DLLBegin(list->list) , DLLEnd(list->list), Matchcmp, cmp_handler);
+	pos = DLLFind(DLLBegin(list->list) , DLLEnd(list->list), Matchcmp, cmp_handler);
 
     iter_for_insert.iter = DLLInsert(list->list, pos, data);
 

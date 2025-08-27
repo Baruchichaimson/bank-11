@@ -124,6 +124,12 @@ void* HeapRemove(heap_t* heap, const void* data, is_match_func func)
 
     size = HeapSize(heap);
 
+    if (i == size - 1)
+    {
+        VectorPopBack(heap->vector);
+        return removed;
+    }
+    
     for (i = 0; i < size; ++i)
     {
         curr = VectorGetAccessToElement(heap->vector, i);

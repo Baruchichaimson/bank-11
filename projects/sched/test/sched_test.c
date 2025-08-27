@@ -1,13 +1,11 @@
 #include <stdio.h>      /* printf */
 #include <stdlib.h>     /* malloc, free */
 #include <unistd.h>     /* sleep */
-#include <assert.h>    /* assert */
+#include <assert.h>     /* assert */
 
 #include "sched.h" /* sched API */ 
-#include "task.h" /* task API */ 
-#include "uid.h" /* uid API */ 
-
-
+#include "task.h"  /* task API */ 
+#include "uid.h"   /* uid API */ 
 
 static int run_counter = 0;
 
@@ -17,7 +15,7 @@ ssize_t CountingFunc(void *param)
     int id = *(int *)param;
     printf("CountingFunc #%d executed (run_counter = %d)\n", id, ++run_counter);
 
-    return 0; // no re-run
+    return 0; /* no re-run */
 }
 
 /* ------------ Struct for DummyFunc ------------ */
@@ -44,13 +42,11 @@ void CleanupFuncNULL(void* param)
 	(void)param;
 }
 
-/* ------------ Dummycleanup: free ------------ */
 void func_free(void* id)
 {
 	free((int*)id);
 }
 
-/* ------------ DummyCleanup: Print ------------ */
 void DummyCleanup(void *param)
 {
     free(param);  
@@ -69,7 +65,6 @@ dummy_data_t *CreateDummyData(int x, int y)
     return data;
 }
 
-/* ------------ DummyFunc: Func Fail Always  ------------ */
 ssize_t FuncFailAlways(void *param)
 {
     (void)param;
@@ -77,7 +72,6 @@ ssize_t FuncFailAlways(void *param)
     return -1; 
 }
 
-/* ------------ DummyFunc: Func Fail Once  ------------ */
 ssize_t FuncFailOnce(void *param)
 {
     int *has_failed = (int *)param;
@@ -93,7 +87,6 @@ ssize_t FuncFailOnce(void *param)
     return 0;  
 }
 
-/* ------------ DummyFunc: Stop run ------------ */
 ssize_t StopFunc(void *param)
 {
     sched_t *sch = (sched_t *)param;
@@ -102,30 +95,30 @@ ssize_t StopFunc(void *param)
     return 0;
 }
 
-/* ------------ DummyFunc: Stop run and fail ------------ */
 ssize_t StopAndFailFunc(void *param)
 {
     sched_t *sched = (sched_t *)param;
     printf("StopAndFailFunc: stopping scheduler\n");
     SchedStop(sched);
-    return -1; // כשל גם כן
+    return -1; /* also fail */
 }
 
-/* ------------ DummyFunc: Counter  ------------ */
 ssize_t DummyFuncConter(void *param)
 {
     int *counter = (int *)param;
     ++(*counter);
     printf(" Counter: %d\n", *counter);
-    return 0; // Don't reschedule
+    return 0;
 }
 
 /* ------------ Tests ------------ */
 void TestSchedCreateDestroy()
 {
+    sched_t *sched;
+
     printf("\n--- TestSchedCreateDestroy ---\n");
 
-    sched_t *sched = SchedCreate();
+    sched = SchedCreate();
     assert(sched);
     printf("SchedCreate: PASS\n");
 
@@ -135,16 +128,20 @@ void TestSchedCreateDestroy()
 
 void TestSchedAddAndIsEmpty()
 {
+    sched_t *sched;
+    dummy_data_t *data;
+    ilrd_uid_t uid;
+
     printf("\n--- TestSchedAddAndIsEmpty ---\n");
 
-    sched_t *sched = SchedCreate();
+    sched = SchedCreate();
     assert(sched);
 
     assert(SchedIsEmpty(sched) == 1);
     printf("SchedIsEmpty before add: PASS\n");
 
-    dummy_data_t *data = CreateDummyData(3, 7);
-    ilrd_uid_t uid = SchedAdd(sched, DummyFunc, data, 1, DummyCleanup, data);
+    data = CreateDummyData(3, 7);
+    uid = SchedAdd(sched, DummyFunc, data, 1, DummyCleanup, data);
     assert(!UIDIsSame(uid, UIDbadUID));
     printf("SchedAdd: PASS\n");
 
@@ -156,23 +153,26 @@ void TestSchedAddAndIsEmpty()
 
 void TestSchedRun()
 {
+    sched_t *sched;
+    int i;
+    int status;
+
     printf("\n--- TestSchedRun ---\n");
 
-    sched_t *sched = SchedCreate();
+    sched = SchedCreate();
     assert(sched);
 
     run_counter = 0;
 
-    for (int i = 0; i < 3; ++i)
+    for (i = 0; i < 3; ++i)
     {
-        int *id = malloc(sizeof(int));
+        int *id = (int *)malloc(sizeof(int));
         *id = i + 1;
-
         SchedAdd(sched, CountingFunc, id, i + 1, func_free, id);
     }
 
     printf("Running scheduler...\n");
-    int status = SchedRun(sched);
+    status = SchedRun(sched);
     printf("SchedRun returned: %d\n", status);
 
     assert(run_counter == 3);
@@ -183,12 +183,16 @@ void TestSchedRun()
 
 void TestSchedRemove()
 {
+    sched_t *sched;
+    dummy_data_t *data;
+    ilrd_uid_t uid;
+
     printf("\n--- TestSchedRemove ---\n");
-    sched_t *sched = SchedCreate();
+    sched = SchedCreate();
     assert(sched);
 
-    dummy_data_t *data = CreateDummyData(5, 10);
-    ilrd_uid_t uid = SchedAdd(sched, DummyFunc, data, 1, DummyCleanup, data);
+    data = CreateDummyData(5, 10);
+    uid = SchedAdd(sched, DummyFunc, data, 1, DummyCleanup, data);
     assert(!UIDIsSame(uid, UIDbadUID));
     printf("SchedAdd: PASS\n");
 
@@ -208,14 +212,19 @@ void TestSchedRemove()
 
 void TestSchedClearAndSize()
 {
+    sched_t *sched;
+    dummy_data_t *data1;
+    dummy_data_t *data2;
+    dummy_data_t *data3;
+
     printf("\n--- TestSchedClearAndSize ---\n");
 
-    sched_t *sched = SchedCreate();
+    sched = SchedCreate();
     assert(sched);
 
-    dummy_data_t *data1 = CreateDummyData(1, 2);
-	dummy_data_t *data2 = CreateDummyData(3, 4);
-	dummy_data_t *data3 = CreateDummyData(5, 6);
+    data1 = CreateDummyData(1, 2);
+	data2 = CreateDummyData(3, 4);
+	data3 = CreateDummyData(5, 6);
 
 	SchedAdd(sched, DummyFunc, data1, 1, DummyCleanup, data1);
 	SchedAdd(sched, DummyFunc, data2, 2, DummyCleanup, data2);
@@ -234,21 +243,23 @@ void TestSchedClearAndSize()
 
 void TestSchedRunWithStop()
 {
+    sched_t *sched;
+    int dummy_counter;
+    int status;
+
 	printf("\n--- TestSchedRunWithStop ---\n");
 	
-    sched_t *sched = SchedCreate();
-    int dummy_counter = 0;
+    sched = SchedCreate();
+    dummy_counter = 0;
 
     assert(sched);
 
     SchedAdd(sched, DummyFuncConter, &dummy_counter, 1, CleanupFuncNULL, NULL);
-
     SchedAdd(sched, StopFunc, sched, 2, CleanupFuncNULL, NULL);
-
     SchedAdd(sched, DummyFuncConter, &dummy_counter, 3, CleanupFuncNULL, NULL);
 
     printf("=== Running Scheduler (should stop early) ===\n");
-    int status = SchedRun(sched);
+    status = SchedRun(sched);
     printf("SchedRun returned: %d \n", status);
 
     printf("Final counter value: %d (should be 1 if stopped early)\n", dummy_counter);
@@ -258,39 +269,50 @@ void TestSchedRunWithStop()
 
 void TestSchedFailedTasksNoEmptySched()
 {
+    sched_t *sched;
+    int init_counter;
+    int status;
+
     printf("\n--- TestSchedFailedTasksNoEmptySched ---\n");
     
-    sched_t *sched = SchedCreate();
+    sched = SchedCreate();
     assert(sched);
 
-    SchedAdd(sched, DummyFuncConter, &(int){0}, 1, CleanupFuncNULL, NULL);  
+    init_counter = 0;
+
+    SchedAdd(sched, DummyFuncConter, &init_counter, 1, CleanupFuncNULL, NULL);  
     SchedAdd(sched, StopAndFailFunc, sched, 2, CleanupFuncNULL, NULL);       
     SchedAdd(sched, FuncFailAlways, NULL, 3, CleanupFuncNULL, NULL);      
 
-    int status = SchedRun(sched);
+    status = SchedRun(sched);
     printf("SchedRun returned: %d \n", status);
-
 
     SchedDestroy(sched);
 }
 
 void TestSchedFailedTasksEmptySched()
 {
+    sched_t *sched;
+    int fail_flag;
+    dummy_data_t *data1;
+    dummy_data_t *data2;
+    int status;
+    
     printf("\n--- TestSchedTestSchedFailedTasksEmptySched ---\n");
     
-    sched_t *sched = SchedCreate();
+    sched = SchedCreate();
     assert(sched);
 
-    int fail_flag = 0;
+    fail_flag = 0;
 
-    dummy_data_t *data1 = CreateDummyData(1, 2);
-    dummy_data_t *data2 = CreateDummyData(3, 4);
+    data1 = CreateDummyData(1, 2);
+    data2 = CreateDummyData(3, 4);
 
     SchedAdd(sched, DummyFunc, data1, 1, DummyCleanup, data1);      
     SchedAdd(sched, FuncFailOnce, &fail_flag, 1, CleanupFuncNULL, NULL); 
     SchedAdd(sched, DummyFunc, data2, 1, DummyCleanup, data2);     
 
-    int status = SchedRun(sched);
+    status = SchedRun(sched);
     printf("SchedRun returned: %d \n", status);
 
     SchedDestroy(sched);
@@ -311,4 +333,3 @@ int main()
     printf("\nAll sched tests passed\n");
     return 0;
 }
-
