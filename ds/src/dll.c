@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
+
 #include "dll.h"
 
 #define ISEND(iter) (IterToNode(iter)->next == NULL)

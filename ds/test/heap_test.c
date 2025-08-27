@@ -1,3 +1,11 @@
+/***************************
+ Exercise:  heap
+ Date: 	    27/08/25
+ Developer: Baruch Haimson
+ Reviewer:  Tamar
+ Status:    Approved
+***************************/
+
 #include <stdio.h>
 #include <assert.h>
 
