@@ -1,8 +1,16 @@
-#include <stdio.h>
-#include <time.h>
+/***************************
+ Exercise:  knight tour
+ Date: 	    02/09/25
+ Developer: Baruch Haimson
+ Reviewer:  Dana
+ Status:    Approved
+***************************/
 
-#include "bit_arr.h"
-#include "knight_tour.h"
+#include <stdio.h> /* printf */
+#include <time.h> /* time_t */
+
+#include "bit_arr.h" /* BitArrSetOn */
+#include "knight_tour.h" /* knight_tour_status_e */
 
 typedef struct move_option
 {

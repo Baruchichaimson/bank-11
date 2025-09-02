@@ -1,6 +1,14 @@
-#include <stdio.h>
+/***************************
+ Exercise:  knight tour
+ Date: 	    02/09/25
+ Developer: Baruch Haimson
+ Reviewer:  Dana
+ Status:    Approved
+***************************/
 
-#include "knight_tour.h"
+#include <stdio.h> /* printf */
+
+#include "knight_tour.h" /* chess_square_t */
 
 int main()
 {
