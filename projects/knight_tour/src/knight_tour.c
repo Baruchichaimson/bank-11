@@ -205,10 +205,13 @@ static int IsValidNext(chess_square_t pos, bit_arr_t visited_lut)
 
 static int CountValidMoves(chess_square_t pos, bit_arr_t visited_lut)
 {
+    size_t i = 0;
     int count = 0;
-    for (int i = 0; i < 8; i++)
+    chess_square_t next = {0};
+    for (i = 0; i < 8; i++)
     {
-        chess_square_t next = { pos.row + moves[i][0], pos.col + moves[i][1] };
+        next.row = pos.row + moves[i][0];
+        next.col = pos.col + moves[i][1];
         if (IsValidNext(next, visited_lut))
         {
             count++;
