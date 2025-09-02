@@ -12,6 +12,8 @@
 #include "bit_arr.h" /* BitArrSetOn */
 #include "knight_tour.h" /* knight_tour_status_e */
 
+#define MAX_KNIGHT_MOVED (8)
+
 typedef struct move_option
 {
     chess_square_t pos;
@@ -54,7 +56,7 @@ static knight_tour_status_e KnightTourRecursive(size_t board[CHESS_LEN][CHESS_LE
                                                 chess_square_t start_square, size_t counter, bit_arr_t visited_lut, time_t time)
 {
     size_t i = 0;
-    chess_square_t new_pos;
+    chess_square_t new_pos = { 0 };
     size_t curr_index = 0;
 
     if (counter > CHESS_LEN * CHESS_LEN)
@@ -62,7 +64,7 @@ static knight_tour_status_e KnightTourRecursive(size_t board[CHESS_LEN][CHESS_LE
         return SUCCESS;
     }
 
-    for (i = 0; i < 8; ++i)
+    for (i = 0; i < MAX_KNIGHT_MOVED; ++i)
     {
         new_pos.row = start_square.row + moves[i][0];
         new_pos.col = start_square.col + moves[i][1];
@@ -80,7 +82,7 @@ static knight_tour_status_e KnightTourRecursive(size_t board[CHESS_LEN][CHESS_LE
         visited_lut = BitArrSetOn(visited_lut, curr_index);
         board[new_pos.row][new_pos.col] = counter;
 
-        if (KnightTourRecursive(board, new_pos, counter + 1, visited_lut, time) == SUCCESS)
+        if (SUCCESS == KnightTourRecursive(board, new_pos, counter + 1, visited_lut, time))
         {
             return SUCCESS;
         }
@@ -94,7 +96,7 @@ static knight_tour_status_e KnightTourRecursive(size_t board[CHESS_LEN][CHESS_LE
 static knight_tour_status_e KnightTourRecursiveHeuristic(size_t board[CHESS_LEN][CHESS_LEN],
                                                          chess_square_t start_square, size_t counter, bit_arr_t visited_lut,time_t time)
 {
-    move_option_t options[8];
+    move_option_t options[MAX_KNIGHT_MOVED];
     chess_square_t new_pos = {0};
     size_t opt_count = 0;
     move_option_t tmp = { 0 };
@@ -107,7 +109,7 @@ static knight_tour_status_e KnightTourRecursiveHeuristic(size_t board[CHESS_LEN]
         return SUCCESS;
     }
 
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < MAX_KNIGHT_MOVED; i++)
     {
         new_pos.row = start_square.row + moves[i][0];
         new_pos.col = start_square.col + moves[i][1];
@@ -120,9 +122,9 @@ static knight_tour_status_e KnightTourRecursiveHeuristic(size_t board[CHESS_LEN]
         }
     }
 
-    for (i = 0; i < opt_count - 1; i++)
+    for (i = 0; i < opt_count - 1; ++i)
     {
-        for (j = i + 1; j < opt_count; j++)
+        for (j = i + 1; j < opt_count; ++j)
         {
             if (options[j].degree < options[i].degree)
             {
@@ -181,7 +183,7 @@ time_t StartTimer(void)
 
 size_t EndTimer(time_t start_timer)
 {
-    return (size_t)time(NULL) - start_timer;
+    return (size_t)(time(NULL) - start_timer);
 }
 
 /*================== helper functions ============================*/
@@ -194,6 +196,7 @@ static size_t CoordinateToBit(chess_square_t pos)
 static int IsValidNext(chess_square_t pos, bit_arr_t visited_lut)
 {
     size_t bit_index = 0;
+
     if (pos.row >= CHESS_LEN || pos.col >= CHESS_LEN)
     {
         return 0;
@@ -208,7 +211,7 @@ static int CountValidMoves(chess_square_t pos, bit_arr_t visited_lut)
     size_t i = 0;
     int count = 0;
     chess_square_t next = {0};
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < MAX_KNIGHT_MOVED; i++)
     {
         next.row = pos.row + moves[i][0];
         next.col = pos.col + moves[i][1];
