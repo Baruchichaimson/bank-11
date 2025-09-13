@@ -1,17 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <semaphore.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <stdio.h>    /* printf */
+#include <stdlib.h>   /* atexit */
+#include <string.h>   /* strcmp */
+#include <semaphore.h>/* sem_t */
+#include <fcntl.h>    /* O_CREAT */
+#include <unistd.h>   /* fflush */
+
+#define PERMISSIONS (0644)
 
 sem_t *sem = NULL;
 const char *sem_name = NULL;
 ssize_t undo_delta = 0; 
 int undo_used = 0;
 
-/* -------------------- Undo Handler -------------------- */
-void undo_handler(void) 
+static void UndoHandler(void) 
 {
     int sval = 0;
     ssize_t i = 0;
@@ -44,10 +45,9 @@ void undo_handler(void)
     }
 }
 
-/* -------------------- Main -------------------- */
 int main(int argc, char *argv[]) 
 {
-    char cmd;
+    char cmd = 0;
     int i = 0;
     int sval = 0;
     int args = 0;
@@ -64,9 +64,9 @@ int main(int argc, char *argv[])
 
     sem_name = argv[1];
 
-    atexit(undo_handler);  
+    atexit(UndoHandler);  
 
-    sem = sem_open(sem_name, O_CREAT | O_EXCL, 0644, 0);
+    sem = sem_open(sem_name, O_CREAT, PERMISSIONS, 0);
     if (sem == SEM_FAILED) 
     {
         perror("sem_open");
@@ -81,7 +81,9 @@ int main(int argc, char *argv[])
         fflush(stdout);
 
         if (!fgets(line, sizeof(line), stdin))
+        {
             break;
+        }
 
         args = sscanf(line, "%c %d %s", &cmd, &num, undo_str);
 

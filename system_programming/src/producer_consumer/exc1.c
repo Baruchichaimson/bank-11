@@ -3,12 +3,14 @@
 #include <pthread.h>
 #include <time.h>
 
-#define NUM_MESSAGES 10
+#define NUM_MESSAGES 30
 
-static int message = 0;
-static int lock = 0; 
+/* ---------------- Shared resources ---------------- */
+static int message = 0;  /* ההודעה שמועברת בין producer ל-consumer */
+static int ready = 0;    /* 0 = producer יכול לכתוב, 1 = consumer יכול לקרוא */
+static int lock = 0;     /* spin lock */
 
-/* ---------------- Test-and-Set ---------------- */
+/* ---------------- Test-and-Set / Spinlock ---------------- */
 int test_and_set(int *lock_ptr)
 {
     int old = *lock_ptr;
@@ -19,7 +21,7 @@ int test_and_set(int *lock_ptr)
 void spin_lock(int *lock_ptr)
 {
     while (test_and_set(lock_ptr))
-    {
+    { 
         /* busy wait */
     }
 }
@@ -30,32 +32,46 @@ void spin_unlock(int *lock_ptr)
 }
 
 /* ---------------- Producer ---------------- */
-void *producer()
+void *producer(void *arg)
 {
     int i;
-    for (i = 0; i < NUM_MESSAGES; ++i)
+    for (i = 0; i < NUM_MESSAGES; i++)
     {
-        spin_lock(&lock);
-
-        message = rand() % 100;
-        printf("Producer produced: %d\n", message);
-
-        spin_unlock(&lock);
+        int done = 0;
+        while (!done)
+        {
+            spin_lock(&lock);
+            if (ready == 0)       /* אפשר לכתוב */
+            {
+                message = rand() % 100;
+                printf("Producer produced: %d\n", message);
+                ready = 1;        /* הודעה מוכנה לצרכן */
+                done = 1;
+            }
+            spin_unlock(&lock);
+        }
     }
     return NULL;
 }
 
 /* ---------------- Consumer ---------------- */
-void *consumer()
+void *consumer(void *arg)
 {
     int i;
-    for (i = 0; i < NUM_MESSAGES; ++i)
+    for (i = 0; i < NUM_MESSAGES; i++)
     {
-        spin_lock(&lock);
-
-        printf("Consumer consumed: %d\n", message);
-
-        spin_unlock(&lock);
+        int done = 0;
+        while (!done)
+        {
+            spin_lock(&lock);
+            if (ready == 1)       /* אפשר לקרוא */
+            {
+                printf("Consumer consumed: %d\n", message);
+                ready = 0;        /* הודעה נצרכה, producer יכול לכתוב */
+                done = 1;
+            }
+            spin_unlock(&lock);
+        }
     }
     return NULL;
 }
@@ -65,11 +81,22 @@ int main(void)
 {
     pthread_t prod, cons;
 
-    srand((unsigned)time(NULL));
+    srand((unsigned int)time(NULL));
 
-    pthread_create(&prod, NULL, producer, NULL);
-    pthread_create(&cons, NULL, consumer, NULL);
+    /* יצירת threads */
+    if (pthread_create(&prod, NULL, producer, NULL) != 0)
+    {
+        printf("Error creating producer thread\n");
+        return 1;
+    }
 
+    if (pthread_create(&cons, NULL, consumer, NULL) != 0)
+    {
+        printf("Error creating consumer thread\n");
+        return 1;
+    }
+
+    /* המתנה לסיום threads */
     pthread_join(prod, NULL);
     pthread_join(cons, NULL);
 
