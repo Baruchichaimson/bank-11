@@ -5,17 +5,13 @@
 
 #define NUM_MESSAGES 30
 
-/* ---------------- Shared resources ---------------- */
-static int message = 0;  /* ההודעה שמועברת בין producer ל-consumer */
-static int ready = 0;    /* 0 = producer יכול לכתוב, 1 = consumer יכול לקרוא */
-static int lock = 0;     /* spin lock */
+static int message = 0; 
+static int ready = 0;    
+static int lock = 0;   
 
-/* ---------------- Test-and-Set / Spinlock ---------------- */
 int test_and_set(int *lock_ptr)
 {
-    int old = *lock_ptr;
-    *lock_ptr = 1;
-    return old;
+    return __sync_lock_test_and_set(lock_ptr, 1);
 }
 
 void spin_lock(int *lock_ptr)
@@ -31,21 +27,22 @@ void spin_unlock(int *lock_ptr)
     *lock_ptr = 0;
 }
 
-/* ---------------- Producer ---------------- */
-void *producer(void *arg)
+void *producer()
 {
     int i;
+    int done = 0;
+
     for (i = 0; i < NUM_MESSAGES; i++)
     {
-        int done = 0;
+        done = 0;
         while (!done)
         {
             spin_lock(&lock);
-            if (ready == 0)       /* אפשר לכתוב */
+            if (ready == 0)       
             {
                 message = rand() % 100;
                 printf("Producer produced: %d\n", message);
-                ready = 1;        /* הודעה מוכנה לצרכן */
+                ready = 1;      
                 done = 1;
             }
             spin_unlock(&lock);
@@ -54,20 +51,20 @@ void *producer(void *arg)
     return NULL;
 }
 
-/* ---------------- Consumer ---------------- */
-void *consumer(void *arg)
+void *consumer()
 {
     int i;
+    int done = 0;
     for (i = 0; i < NUM_MESSAGES; i++)
     {
-        int done = 0;
+        done = 0;
         while (!done)
         {
             spin_lock(&lock);
-            if (ready == 1)       /* אפשר לקרוא */
+            if (ready == 1)       
             {
                 printf("Consumer consumed: %d\n", message);
-                ready = 0;        /* הודעה נצרכה, producer יכול לכתוב */
+                ready = 0;        
                 done = 1;
             }
             spin_unlock(&lock);
@@ -76,14 +73,12 @@ void *consumer(void *arg)
     return NULL;
 }
 
-/* ---------------- Main ---------------- */
 int main(void)
 {
     pthread_t prod, cons;
 
     srand((unsigned int)time(NULL));
 
-    /* יצירת threads */
     if (pthread_create(&prod, NULL, producer, NULL) != 0)
     {
         printf("Error creating producer thread\n");
@@ -96,7 +91,6 @@ int main(void)
         return 1;
     }
 
-    /* המתנה לסיום threads */
     pthread_join(prod, NULL);
     pthread_join(cons, NULL);
 

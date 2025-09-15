@@ -17,6 +17,8 @@ typedef node_t* sll_iter_t;
 typedef int (*is_match_func_t)(const void* data, void* param);
 typedef int (*action_func_t)(void* data, void* param);
 
+#include <stddef.h>
+
 /*---------------------------------------------------------
  * Function: SLLCreate
  * --------------------------------------------------------
