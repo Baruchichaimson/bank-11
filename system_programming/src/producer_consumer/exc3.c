@@ -61,7 +61,6 @@ void *consumer(void *arg)
 
         if (finished_producing && consumed_count >= NUM_PRODUCERS * NUM_MESSAGES && SLLIsEmpty(queue))
         {
-            pthread_mutex_unlock(&lock);
             break;
         }
     }
@@ -78,8 +77,12 @@ int main()
     queue = SLLCreate();
     if (!queue) return 1;
 
-    sem_init(&sem, 0, 0); 
-
+    if (sem_init(&sem,0 ,0) == -1) 
+    {
+        printf("FAILED MALLOC\n");
+        return 0;        
+    }   
+ 
     for (size_t i = 0; i < NUM_PRODUCERS; i++)
         pthread_create(&prod[i], NULL, producer, (void*)(size_t)i);
 

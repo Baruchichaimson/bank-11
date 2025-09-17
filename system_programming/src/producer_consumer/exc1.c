@@ -77,7 +77,6 @@ int main(void)
 {
     pthread_t prod, cons;
 
-    srand((unsigned int)time(NULL));
 
     if (pthread_create(&prod, NULL, producer, NULL) != 0)
     {

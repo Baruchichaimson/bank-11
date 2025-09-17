@@ -19,11 +19,11 @@ $(LIB): $(SRC_DIR)/$(DS_NAME).c $(INC_DIR)/$(DS_NAME).h
 	$(CC) $(CFLAGS) -I$(INC_DIR) -shared -o $@ $<
 
 # Build Test object file #
-$(OUTPUT_DIR)/$(DS_NAME)_test.o: $(TEST_DIR)/$(DS_NAME)_test.c
+$(OUTPUT_DIR)/$(DS_NAME)_test_threads.o: $(TEST_DIR)/$(DS_NAME)_test_threads.c
 	$(CC) $(CFLAGS) -I$(INC_DIR) -c -o $@ $<
 
 # Test executable linked with shared library #
-$(TARGET): $(OUTPUT_DIR)/$(DS_NAME)_test.o $(LIB)
+$(TARGET): $(OUTPUT_DIR)/$(DS_NAME)_test_threads.o $(LIB)
 	$(CC) $(CFLAGS) -o $@ $< -L$(OUTPUT_DIR) -l$(DS_NAME) -Wl,-rpath=$(OUTPUT_DIR)
 
 # The default goal is now the executable in the correct bin subdirectory.

@@ -33,8 +33,9 @@ void* producer(void* arg)
         CBuffWrite(buff, &messages[id][i], sizeof(int));
         printf("Producer %d produced %d\n", id, messages[id][i]);
 
+        __sync_synchronize();
         pthread_mutex_unlock(&lock);
-        sem_post(&full);               // מוסיפים פריט מלא
+        sem_post(&full);              
     }
 
     return NULL;
@@ -59,6 +60,8 @@ void* consumer(void* arg)
 
         CBuffRead(buff, &msg, sizeof(int));
         printf("Consumer %d consumed %d\n", id, msg);
+
+        __sync_synchronize();
         pthread_mutex_unlock(&lock);
         sem_post(&empty);
     }
@@ -78,8 +81,16 @@ int main()
         return 1;
     }
 
-    sem_init(&full, 0, 0);
-    sem_init(&empty, 0, CB_CAPACITY);
+    if(sem_init(&full, 0, 0) == -1)
+    {
+        printf("FAILED MALLOC\n");
+        return 0;        
+    }   
+    if(sem_init(&empty, 0, CB_CAPACITY) == -1)
+    {
+        printf("FAILED MALLOC\n");
+        return 0;        
+    }   
 
     for (size_t i = 0; i < NUM_PRODUCERS; i++)
         pthread_create(&prod[i], NULL, producer, (void*)(size_t)i);

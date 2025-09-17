@@ -12,12 +12,16 @@
 #include <stdlib.h>     /* malloc, free, exit */
 #include <unistd.h>     /* getpid, sleep */
 #include <string.h>     /* memcpy, memset, strlen */
+#include <pthread.h>    /* pthread_mutex_lock */
 #include <sys/socket.h> /* struct sockaddr, socket functions */
 #include <netinet/in.h> /* struct sockaddr_in, htons */
 #include <arpa/inet.h>  /* inet_ntop, inet_pton */
+#include <time.h> 
+
 #include "uid.h"        /* ilrd_uid_t, UIDCreate */
 
 static char* getip(char *ip_out);
+static pthread_mutex_t counter_lock = PTHREAD_MUTEX_INITIALIZER;
 
 const ilrd_uid_t UIDbadUID = {0, 0, 0, {0}};
 static size_t global_counter = 0;
@@ -27,7 +31,10 @@ ilrd_uid_t UIDCreate(void)
 	ilrd_uid_t uid;
 	char* ip;
 
-	uid.counter = global_counter++;
+	pthread_mutex_lock(&counter_lock);
+    uid.counter = global_counter++;
+    pthread_mutex_unlock(&counter_lock);
+
     uid.timestamp = time(NULL);
     uid.pid = getpid();
 	ip = getip((char *)uid.ip);
