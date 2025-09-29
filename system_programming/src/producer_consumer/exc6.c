@@ -35,12 +35,10 @@ void* consumer(void* arg)
             break;
         }
 
-        /* צריכה */
         printf("Consumer %d consumed message %d\n", id, message);
         consumed[id] = 1;
         consumers_done++;
 
-        /* אם כולם סיימו - להעיר את המפיק */
         if (consumers_done == total_consumers)
         {
             pthread_cond_signal(&cond);
@@ -55,13 +53,16 @@ void* consumer(void* arg)
 /* ----------------- Producer ----------------- */
 void* producer(void* arg)
 {
-    for (int i = 1; i <= NUM_MESSAGES; i++)
+    int i = 1;
+    int j = 0;
+
+    for (i = 1; i <= NUM_MESSAGES; i++)
     {
         pthread_mutex_lock(&lock);
 
         message = i;
         consumers_done = 0;
-        for (int j = 0; j < total_consumers; j++)
+        for (j = 0; j < total_consumers; j++)
         {
             consumed[j] = 0;
         }
@@ -92,18 +93,19 @@ void* producer(void* arg)
 /* ----------------- Main ----------------- */
 int main()
 {
+    int i = 0;
     pthread_t prod;
     pthread_t cons[NUM_CONSUMERS];
 
     pthread_create(&prod, NULL, producer, NULL);
 
-    for (int i = 0; i < NUM_CONSUMERS; i++)
+    for (i = 0; i < NUM_CONSUMERS; i++)
     {
         pthread_create(&cons[i], NULL, consumer, (void*)(size_t)i);
     }
 
     pthread_join(prod, NULL);
-    for (int i = 0; i < NUM_CONSUMERS; i++)
+    for (i = 0; i < NUM_CONSUMERS; i++)
     {
         pthread_join(cons[i], NULL);
     }
