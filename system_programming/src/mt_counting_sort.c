@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <pthread.h>
 
 #define ALPHABET_SIZE 256 
@@ -31,7 +32,7 @@ void *count_worker(void *arg)
 
 void MTCountingSort(const char *input, size_t n, char *output, size_t num_threads) 
 {
-    int global_count[ALPHABET_SIZE] = {0};
+    size_t global_count[ALPHABET_SIZE] = {0};
     thread_arg_t args[MAX_THREADS];
     pthread_t threads[MAX_THREADS];
     int *local_counts[MAX_THREADS];
@@ -52,7 +53,7 @@ void MTCountingSort(const char *input, size_t n, char *output, size_t num_thread
         local_counts[t] = calloc(ALPHABET_SIZE, sizeof(int));
         if(!local_counts[t])
         {
-            printf("Error: failed to allocate memory for local_counts[%d]\n", t);
+            printf("Error: failed to allocate memory for local_counts[%ld]\n", t);
             for (j = 0; j < t; j++) 
             {
                 free(local_counts[j]);
@@ -103,6 +104,8 @@ int main(int argc, char **argv)
     char *sorted = NULL;
     char *big_buffer = NULL;
     char *buffer = NULL;
+    clock_t start_time;
+    clock_t end_time;
     size_t n = 0;
     size_t copies = 10;
     size_t big_n = 0;
@@ -162,7 +165,11 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    start_time = clock();
+
     MTCountingSort(big_buffer, big_n, sorted, num_threads);
+
+    end_time = clock();
 
     printf("=== Sorted Letters (A-Z, a-z) ===\n");
     for (size_t i = 0; i < big_n; i++) 
@@ -173,6 +180,8 @@ int main(int argc, char **argv)
         }
     }
     printf("\n");
+
+    printf("Time elapsed: %.3f seconds\n", ((double)(end_time - start_time)) / CLOCKS_PER_SEC);
 
     free(big_buffer);
     free(sorted);
