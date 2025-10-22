@@ -16,3 +16,4 @@
 !.my_aliases
 
 !*.cpp
+!*.hpp
