@@ -8,6 +8,7 @@
 
 #define WD_SEM_START "/wd_start_sem"
 #define WD_SEM_STOP  "/wd_stop_sem"
+#define USER_SEM_START  "/user_start_sem"
 
 typedef struct wd_context
 {

@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 20; ++i)
     {
         printf("User alive... %d\n", i);
         sleep(1);

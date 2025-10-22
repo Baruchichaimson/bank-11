@@ -15,7 +15,8 @@ int main(int argc, char *argv[])
 {
     wd_context_t ctx;
     struct sigaction sa;
-    sem_t *sem = NULL;
+    sem_t *wd_sem = NULL;
+    sem_t *user_sem = NULL;
     sem_t *stop_sem = NULL;
     sched_t *sched = NULL;
 
@@ -51,12 +52,20 @@ int main(int argc, char *argv[])
     SchedAdd(sched, CheckTolerance, &ctx, interval, DummyCleanup, NULL);
     SchedAdd(sched, CheckStopFlag, &ctx, interval, DummyCleanup, NULL);
 
-    sem = sem_open(WD_SEM_START, 0);
-    if (sem != SEM_FAILED) 
+    wd_sem = sem_open(WD_SEM_START, 0);
+    if (wd_sem != SEM_FAILED) 
     { 
-        sem_post(sem); 
-        sem_close(sem); 
+        sem_post(wd_sem); 
+        sem_close(wd_sem);
     }
+
+    user_sem = sem_open(USER_SEM_START, 0);
+    if (user_sem != SEM_FAILED) 
+    { 
+        sem_wait(user_sem); 
+        sem_close(user_sem);
+    }
+    
 
     stop_sem = sem_open(WD_SEM_STOP, 0);
     if (stop_sem != SEM_FAILED)

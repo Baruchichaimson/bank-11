@@ -26,6 +26,7 @@ static void NoCleanup(void *param)
 
 static void *UserSchedThread(void *arg)
 {
+    sem_t *sem = NULL;
     wd_context_t *ctx = (wd_context_t *)arg;
     if (!ctx) return NULL;
 
@@ -35,6 +36,15 @@ static void *UserSchedThread(void *arg)
     SchedAdd(user_sched, SendSigUSR1, ctx, ctx->interval, NoCleanup, NULL);
     SchedAdd(user_sched, CheckTolerance, ctx, ctx->interval, NoCleanup, NULL);
     SchedAdd(user_sched, CheckStopFlag, ctx, ctx->interval, NoCleanup, NULL);
+
+    sem_unlink(USER_SEM_START);
+
+    sem = sem_open(USER_SEM_START, 0);
+    if (sem != SEM_FAILED) 
+    { 
+        sem_post(sem); 
+        sem_close(sem);
+    }
 
     SchedRun(ctx->user_sched);
 
