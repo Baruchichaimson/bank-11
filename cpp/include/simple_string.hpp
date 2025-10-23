@@ -1,7 +1,15 @@
+/************************************
+ * Exercise:    Simple String
+ * Date:        23/10/2025
+ * Developer:   Baruch Haimson
+ * Reviewer:    Maria
+ * Status:      In Progress
+ ************************************/
+
 #ifndef __ILRD_STRING__
 #define __ILRD_STRING__
 
-#include <iostream>
+#include <iostream> // istream
 
 namespace ilrd
 {
