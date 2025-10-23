@@ -1,7 +1,16 @@
+/************************************
+ * Exercise:    Simple String
+ * Date:        23/10/2025
+ * Developer:   Baruch Haimson
+ * Reviewer:    meir
+ * Status:      Approved
+ ************************************/
+
 #ifndef __ILRD_COMPLEX__
 #define __ILRD_COMPLEX__
 
 #include <iostream> // std::istream, std::ostream
+#include <cmath> // std::abs
 
 namespace ilrd
 {
@@ -10,10 +19,7 @@ class Complex
 {
 public:
     /* ---- Ctor ---- */
-    Complex(double real = 0, double imaginary = 0) // intentionally non-explicit
-        : m_real(real), m_imaginary(imaginary)
-    {
-    }
+    Complex(double real = 0, double imaginary = 0); // intentionally non-explicit
 
     /* ---- Getters ---- */
     inline double GetReal() const
@@ -118,8 +124,10 @@ inline Complex operator/(const Complex& lhs, const Complex& rhs)
 /* ---- Comparison operators ---- */
 inline bool operator==(const Complex& lhs, const Complex& rhs)
 {
-    return (lhs.GetReal() == rhs.GetReal()) &&
-           (lhs.GetImaginary() == rhs.GetImaginary());
+    const double epsilon = 10E-6;
+    Complex temp = (lhs - rhs);
+	return (abs(temp.GetReal()) <= epsilon) && (abs(temp.GetImaginary()) <= epsilon);
+
 }
 
 inline bool operator!=(const Complex& lhs, const Complex& rhs)
