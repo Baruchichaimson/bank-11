@@ -26,6 +26,6 @@ namespace ilrd
     bool operator<(const String& lhs, const String& rhs);
     std::ostream& operator<<(std::ostream& os, const String& other); //advanced
     std::istream& operator>>(std::istream& is, String& other); //advanced
-};// ilrd
+}// ilrd
 
 #endif //__ILRD_STRING__

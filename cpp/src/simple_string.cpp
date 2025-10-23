@@ -27,7 +27,7 @@ String& String::operator=(const String& other)
 String::~String()
 {
     delete[] m_str;
-    m_str = nullptr;
+    m_str = NULL;
 }
 
 size_t String::Length() const
@@ -42,10 +42,10 @@ char* String::Cstr() const
 
 char* String::Init(const char* str)
 {
-    char* temp = nullptr;
+    char* temp = NULL;
     size_t len = 0;
 
-    if (str == nullptr)
+    if (str == NULL)
     {
         temp = new char[1];
         temp[0] = '\0';
