@@ -14,7 +14,7 @@ static void handler(int sig)
 
 int main() 
 {
-    int time = 5;
+    int time = 15;
     pid_t child_pid;
     pid_t parent_pid;
     struct sigaction sa;
@@ -79,4 +79,5 @@ int main()
             time--;
         }
     }
+    return 0;
 }
