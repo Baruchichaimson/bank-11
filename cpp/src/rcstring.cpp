@@ -43,7 +43,7 @@ namespace ilrd
             m_rc = other.m_rc;
             ++m_rc->m_count;
         }
-        return *this;
+        return (*this);
     }
 
     RCString::~RCString() noexcept
@@ -72,7 +72,6 @@ namespace ilrd
 
         if (m_rc->m_count > 1)
         {
-            /* Copy-on-write: יוצרים עותק חדש */
             size_t len = Length();
             size_t total_size = offsetof(RCImp, m_str) + len + 1;
             void* mem = operator new(total_size);
