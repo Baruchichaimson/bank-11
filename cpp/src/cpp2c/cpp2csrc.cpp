@@ -1,7 +1,8 @@
 #include <iostream> //cout
 using namespace std;
 
-class PublicTransport {
+class PublicTransport 
+{
 public:
     PublicTransport() : m_license_plate(++s_count)
     {

@@ -20,38 +20,47 @@ typedef struct ArmyMinibus ArmyMinibus;
 typedef struct Taxi Taxi;
 typedef struct SpecialTaxi SpecialTaxi;
 
+typedef void (*PTFunc)(PT*);
+typedef void (*MBWashFunc)(Minibus*, int);
+
 /* ========= vtable structures =================== */
-typedef struct Vtable {
-    void (*dtor)(PT*);
-    void (*display)(PT*);
+typedef struct Vtable 
+{
+    PTFunc dtor;
+    PTFunc display;
 } Vtable;
 
-typedef struct MinibusVtable {
-    void (*dtor)(PT*);
-    void (*display)(PT*);
-    void (*wash)(Minibus*, int);
+typedef struct MinibusVtable 
+{
+    Vtable base;
+    MBWashFunc wash;
 } MinibusVtable;
 
 /* ========= entity structures ================== */
-struct PT {
+struct PT 
+{
     const Vtable* vptr;
     int m_license_plate;
 };
 
-struct Minibus {
+struct Minibus 
+{
     PT pt;
     int m_numSeats;
 };
 
-struct ArmyMinibus {
+struct ArmyMinibus 
+{
     Minibus minibus;
 };
 
-struct Taxi {
+struct Taxi 
+{
     PT pt;
 };
 
-struct SpecialTaxi {
+struct SpecialTaxi 
+{
     Taxi taxi;
 };
 
@@ -67,24 +76,24 @@ void PTPrintCount(void);
 /* Minibus */
 void MinibusCtor(Minibus* this);
 void MinibusCctor(Minibus* this, const Minibus* other);
-void Minibusdtor(PT* p);
-void Minibusdisplay(PT* p);
+void Minibusdtor(Minibus* this);
+void Minibusdisplay(Minibus* this);
 void MinibusWash(Minibus* this, int minutes);
 
 /* ArmyMinibus */
 void ArmyMinibusCtor(ArmyMinibus* this);
-void ArmyMinibusdtor(PT* p);
+void ArmyMinibusdtor(ArmyMinibus* this);
 
 /* Taxi */
 void TaxiCtor(Taxi* this);
 void TaxiCctor(Taxi* this, const Taxi* other);
-void Taxidtor(PT* p);
-void Taxidisplay(PT* p);
+void Taxidtor(Taxi* this);
+void Taxidisplay(Taxi* this);
 
 /* SpecialTaxi */
 void SpecialTaxiCtor(SpecialTaxi* this);
-void SpecialTaxidtor(PT* p);
-void SpecialTaxidisplay(PT* p);
+void SpecialTaxidtor(SpecialTaxi* this);
+void SpecialTaxidisplay(SpecialTaxi* st);
 
 /* helpers */
 void print_info_PT(PT* p);          
@@ -97,11 +106,11 @@ void print_info_display(int i);
 
 /* ========= vtables ============================ */
 
-static const Vtable PT_vtable                 = { PTdtor, PTdisplay };
-static const Vtable Taxi_vtable               = { Taxidtor, Taxidisplay };
-static const Vtable SpecialTaxi_vtable        = { SpecialTaxidtor, SpecialTaxidisplay };
-static const MinibusVtable Minibus_vtable     = { Minibusdtor, Minibusdisplay, MinibusWash };
-static const MinibusVtable ArmyMinibus_vtable = { (void(*)(PT*))ArmyMinibusdtor, (void(*)(PT*))Minibusdisplay, MinibusWash };
+static const Vtable PT_vtable                 = { (PTFunc)PTdtor, (PTFunc)PTdisplay };
+static const Vtable Taxi_vtable               = { (PTFunc)Taxidtor, (PTFunc)Taxidisplay };
+static const Vtable SpecialTaxi_vtable        = { (PTFunc)SpecialTaxidtor, (PTFunc)SpecialTaxidisplay };
+static const MinibusVtable Minibus_vtable     = { { (PTFunc)Minibusdtor, (PTFunc)Minibusdisplay }, (MBWashFunc)MinibusWash };
+static const MinibusVtable ArmyMinibus_vtable = { { (PTFunc)ArmyMinibusdtor, (PTFunc)Minibusdisplay }, (MBWashFunc)MinibusWash };
 
 /* ===== PT implementations ===== */
 void PTctor(PT* this)
@@ -157,16 +166,14 @@ void MinibusCctor(Minibus* this, const Minibus* other)
     printf("Minibus::CCtor()\n");
 }
 
-void Minibusdtor(PT* p)
+void Minibusdtor(Minibus* this)
 {
-    Minibus* this = (Minibus*)p;
     printf("Minibus::Dtor()\n");
     PTdtor(&this->pt);
 }
 
-void Minibusdisplay(PT* p)
+void Minibusdisplay(Minibus* this)
 {
-    Minibus* this = (Minibus*)p;
     printf("Minibus::display() ID:%d num seats:%d\n",
            PTGetID(&this->pt), this->m_numSeats);
 }
@@ -184,11 +191,10 @@ void ArmyMinibusCtor(ArmyMinibus* this)
     printf("ArmyMinibus::Ctor()\n");
 }
 
-void ArmyMinibusdtor(PT* p)
+void ArmyMinibusdtor(ArmyMinibus* this)
 {
-    ArmyMinibus* this = (ArmyMinibus*)p;
     printf("ArmyMinibus::Dtor()\n");
-    Minibusdtor(&this->minibus.pt);
+    Minibusdtor(&this->minibus);
 }
 
 /* ===== Taxi ===== */
@@ -206,16 +212,14 @@ void TaxiCctor(Taxi* this, const Taxi* other)
     printf("Taxi::CCtor()\n");
 }
 
-void Taxidtor(PT* p)
+void Taxidtor(Taxi* this)
 {
-    Taxi* this = (Taxi*)p;
     printf("Taxi::Dtor()\n");
     PTdtor(&this->pt);
 }
 
-void Taxidisplay(PT* p)
+void Taxidisplay(Taxi* this)
 {
-    Taxi* this = (Taxi*)p;
     printf("Taxi::display() ID:%d\n", PTGetID(&this->pt));
 }
 
@@ -227,16 +231,15 @@ void SpecialTaxiCtor(SpecialTaxi* this)
     printf("SpecialTaxi::Ctor()\n");
 }
 
-void SpecialTaxidtor(PT* p)
+void SpecialTaxidtor(SpecialTaxi* this)
 {
-    SpecialTaxi* this = (SpecialTaxi*)p;
     printf("SpecialTaxi::Dtor()\n");
-    Taxidtor(&this->taxi.pt);
+    Taxidtor(&this->taxi);
 }
 
-void SpecialTaxidisplay(PT* p)
+void SpecialTaxidisplay(SpecialTaxi* st)
 {
-    Taxi* t = (Taxi*)p;
+    Taxi* t = (Taxi*)st;
     printf("SpecialTaxi::display() ID:%d\n", PTGetID(&t->pt));
 }
 
@@ -403,7 +406,7 @@ int main(void)
     army_minibus->minibus.pt.vptr->dtor(&army_minibus->minibus.pt);
     free(army_minibus);
 
-    SpecialTaxidtor(&st.taxi.pt);
+    SpecialTaxidtor(&st);
 
     for (i = 3; i >= 0; --i) 
     {
