@@ -1,5 +1,5 @@
 /**************************
- Exercise:  shapes
+ Exercise:  CPP2C
  Date: 	    12/11/25
  Developer: Baruch Haimson
  Reviewer:  Maria
