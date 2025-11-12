@@ -108,7 +108,7 @@ void print_info_PT(PT* p);
 void print_info_void(void);         
 void print_info_Minibus(Minibus* m);
 void   print_info_int(int i, PT* this);         
-void taxi_display(Taxi t);    
+void taxi_display(Taxi* t);    
 void print_info_display(int i);
 
 
@@ -285,11 +285,9 @@ void print_info_int(int i,PT* this)
     Minibusdtor(&ret);
 }
 
-void taxi_display(Taxi src)
+void taxi_display(Taxi* src)
 {
-    TaxiCctor(&src, &src);   
-    Taxidisplay(&src);
-    Taxidtor(&src); 
+    Taxidisplay(src);
 }
 
 int main(void)
@@ -306,6 +304,7 @@ int main(void)
     ArmyMinibus* army_minibus = {0};
     Minibus tmpM = {0};
     Taxi tmpT = {0};
+    Taxi tmp = {0};
 
     MinibusCtor(&m);
 
@@ -399,7 +398,11 @@ int main(void)
 
     SpecialTaxiCtor(&st);
 
-    taxi_display(st.taxi);
+
+    
+    TaxiCctor(&tmp, &st.taxi);  
+    taxi_display(&tmp);         
+    Taxidtor(&tmp);             
 
     army_minibus = (ArmyMinibus*)malloc(sizeof(ArmyMinibus));
     ArmyMinibusCtor(army_minibus);
