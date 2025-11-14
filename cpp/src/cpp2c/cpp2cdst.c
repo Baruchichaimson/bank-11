@@ -197,14 +197,14 @@ void MinibusWash(Minibus* this, int minutes)
 void ArmyMinibusCtor(ArmyMinibus* this)
 {
     MinibusCtor(&this->minibus);
-    ((PT*)(Minibus*)this)->vptr = (Vtable*)&ArmyMinibus_vtable;
+    ((PT*)this)->vptr = (Vtable*)&ArmyMinibus_vtable;
     printf("ArmyMinibus::Ctor()\n");
 }
 
 void ArmyMinibusdtor(ArmyMinibus* this)
 {
     printf("ArmyMinibus::Dtor()\n");
-    ((PT*)(Minibus*)this)->vptr = (Vtable*)&Minibus_vtable;
+    ((PT*)this)->vptr = (Vtable*)&Minibus_vtable;
     Minibusdtor(&this->minibus);
 }
 
@@ -239,14 +239,14 @@ void Taxidisplay(Taxi* this)
 void SpecialTaxiCtor(SpecialTaxi* this)
 {
     TaxiCtor(&this->taxi);
-    ((PT*)(Taxi*)this)->vptr = &SpecialTaxi_vtable;
+    ((PT*)this)->vptr = &SpecialTaxi_vtable;
     printf("SpecialTaxi::Ctor()\n");
 }
 
 void SpecialTaxidtor(SpecialTaxi* this)
 {
     printf("SpecialTaxi::Dtor()\n");
-    ((PT*)(Taxi*)this)->vptr = &Taxi_vtable;
+    ((PT*)this)->vptr = &Taxi_vtable;
     Taxidtor(&this->taxi);
 }
 
