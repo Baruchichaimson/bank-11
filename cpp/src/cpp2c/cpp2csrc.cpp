@@ -29,6 +29,12 @@ public:
     {
         cout << "s_count: " << s_count << "\n";
     }
+
+    virtual PublicTransport* clone() const
+    {
+        return new PublicTransport(*this);
+    }
+
 protected:
     int get_ID()
     {
@@ -71,6 +77,12 @@ public:
         cout << "Minibus::wash(" << minutes << ") ID:" << get_ID() << "\n";
     }
 
+    PublicTransport* clone() const 
+    {
+        return new Minibus(*this);
+    }
+
+
 private:
     int m_numSeats;
 };
@@ -93,6 +105,10 @@ public:
         cout << "ArmyMinibus::Dtor()\n";
     }
 
+    PublicTransport* clone() const 
+    {
+        return new ArmyMinibus(*this);
+    }
 private:
 
 };
@@ -118,6 +134,11 @@ public:
     void display()
     {
         cout << "Taxi::display() ID:" << get_ID() << "\n";
+    }
+
+    PublicTransport* clone() const 
+    {
+        return new Taxi(*this);
     }
 
 private:
@@ -150,13 +171,32 @@ public:
     {
         cout << "SpecialTaxi::display() ID:" << get_ID() << "\n";
     }
+
+    PublicTransport* clone() const 
+    {
+        return new SpecialTaxi(*this);
+    }
 private:
 };
 
-/*class PublicConvoy: public PublicTransport {
+class PublicConvoy: public PublicTransport {
 public:
-    PublicConvoy() : m_pt1(new Minibus()), m_pt2(new Taxi())
+    PublicConvoy()  :
+        m_pt1(new Minibus()),
+        m_pt2(new Taxi()),
+        m_m(),
+        m_t()
     {
+    }
+
+    PublicConvoy(const PublicConvoy& other) : 
+        PublicTransport(other),                       
+        m_pt1(other.m_pt1 ? other.m_pt1->clone() : NULL),
+        m_pt2(other.m_pt2 ? other.m_pt2->clone() : NULL),
+        m_m(other.m_m),
+        m_t(other.m_t)
+    {
+        cout << "PublicConvoy::CCtor()\n";
     }
 
     ~PublicConvoy()
@@ -178,7 +218,7 @@ private:
     PublicTransport *m_pt2;
     Minibus m_m;
     Taxi m_t;
-};*/
+};
 
 void print_info(PublicTransport &a)
 {
@@ -243,13 +283,13 @@ int main(int argc, char **argv, char **envp)
     SpecialTaxi st;
     taxi_display(st);
 
-    /*PublicConvoy *ts1 = new PublicConvoy();
+    PublicConvoy *ts1 = new PublicConvoy();
     PublicConvoy *ts2 = new PublicConvoy(*ts1);
     ts1->display();
     ts2->display();
     delete ts1;
-    ts2->display(); // this crashes. fix the bug!
-    delete ts2;*/
+    ts2->display(); 
+    delete ts2;
 
     ArmyMinibus* army_minibus = new ArmyMinibus;
     army_minibus->display();

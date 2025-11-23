@@ -6,13 +6,13 @@
 
 int main()
 {
-    int i = 1;
+    int i = 2;
     char msg[128] = {0};
     char buffer[NET_BUF_SIZE] = {0};
     NetSocket client = NetCreate(NET_TCP);
     NetConnect(&client, "127.0.0.1", PORT);
 
-    for (i = 1; i <= 5; ++i)
+    while(1)
     {
         sprintf(msg, "Ping %d", i);
         NetSend(&client, msg, NULL);
