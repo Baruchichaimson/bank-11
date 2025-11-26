@@ -2,13 +2,13 @@
 Exercise: 	cpp_intro - rc_string
 Date:		24/11/2025
 Developer:	Baruch Haimson
-Reviewer: 	
-Status:		
+Reviewer: 	shiran 
+Status:		Approved
 **************************************/
 
-#include <iostream>
-#include <mutex>
-#include <fstream>
+#include <iostream> /* cout */
+#include <mutex> /* mutex */
+#include <fstream> /* template */
 
 namespace ilrd
 {
@@ -20,34 +20,26 @@ namespace ilrd
     public:
         RAII(Resource& r) : res(r) 
         {
-            res.acquire(); 
+            res.lock();; 
             std::cout << "Resource acquired\n";
         }
 
         ~RAII() 
         {
-            res.release(); 
+            res.unlock(); 
             std::cout << "Resource released\n";
         }
 
-        RAII(const RAII&) = delete;
+        RAII(const RAII&) = delete;           // for prevent double unlock -> UB for example
         RAII& operator=(const RAII&) = delete;
     };
 
-    class MutexWrapper 
-    {
-    private:
-        std::mutex mtx;
-    public:
-        void acquire() { mtx.lock(); }
-        void release() { mtx.unlock(); }
-    };
 }
 int main() 
 {
-    ilrd::MutexWrapper myMutex;
+    std::mutex myMutex;
 
-    ilrd::RAII<ilrd::MutexWrapper> lock(myMutex);
+    ilrd::RAII<std::mutex> lock(myMutex);
     std::cout << "Inside critical section\n";
     
     return 0;

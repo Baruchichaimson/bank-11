@@ -8,6 +8,7 @@ Status:
 #include <cstddef>
 #include <stdexcept> // for std::out_of_range
 #include <new>
+
 #include "rcstring.hpp"
 
 namespace ilrd
