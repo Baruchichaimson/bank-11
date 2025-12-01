@@ -17,10 +17,6 @@ namespace ilrd
     class SharedPtr
     {
     public:
-
-        SharedPtr(): m_ptr(NULL), m_ref_count(NULL)
-        {}
-
         explicit SharedPtr(T* ptr = NULL): m_ptr(ptr), m_ref_count(new size_t(1))
         {}
 
