@@ -2,7 +2,7 @@
 Exercise: thread pool
 Date: 03/12/2025
 Developer: Baruch Haimson
-Reviewer: 
+Reviewer: Guy
 Status:	waiting
 **************************************/
 
@@ -60,7 +60,7 @@ private:
 public:
 
     explicit ThreadPool(std::size_t num_threads);
-    ~ThreadPool();
+    ~ThreadPool() noexcept;
 
     void Add(TaskPtr task, priority priority = MEDIUM);
     void Pause();
@@ -75,43 +75,30 @@ public:
 
 private:
 
-    class WorkerThread;
-
-    void WaitIfPaused(WorkerThread* self);
-    void WorkerLoop(WorkerThread* self);
-
     class WorkerThread
     {
     public:
 
-        WorkerThread(ThreadPool* pool, TaskWaitableQueue& queue, std::mutex& run_mutex, std::condition_variable& run_cond, bool& is_running);
+        WorkerThread(ThreadPool& pool);
         ~WorkerThread();
 
         void SetAlive(bool value);
         bool IsAlive() const;
 
     private:
+        void WaitIfPaused();
         void RunThread();
 
     private:
-        ThreadPool* m_pool;
-        TaskWaitableQueue& m_queue;
-        std::mutex& m_run_mutex;
-        std::condition_variable& m_run_cond;
 
-        bool& m_is_running;
+        ThreadPool& m_pool;
         bool m_is_alive;
-
         std::thread m_thread;
     };
 
-private:
-
     std::vector<std::unique_ptr<WorkerThread>> m_threads;
     TaskWaitableQueue m_tasks;
-
     bool m_is_running; 
-
     std::mutex m_run_mutex;
     std::condition_variable m_run_cond;
 };

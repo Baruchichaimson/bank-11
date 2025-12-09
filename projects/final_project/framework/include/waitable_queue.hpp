@@ -69,9 +69,12 @@ namespace ilrd
     void WaitableQueue<T, Container>::pop(T* value)
     {
         std::unique_lock<std::recursive_timed_mutex> lock(m_mutex);
-        m_cond_var.wait(lock, [this]() { return !m_queue.empty(); });
+        m_cond_var.wait(lock, [this]() 
+        { 
+            return !m_queue.empty(); 
+        });
 
-        *value = std::move(m_queue.top());
+        *value = std::move(m_queue.front());
         m_queue.pop();
     }
 
@@ -87,7 +90,7 @@ namespace ilrd
             return false; 
         }
 
-        *value = std::move(m_queue.top());
+        *value = std::move(m_queue.front());
         m_queue.pop();
         return true;
     }

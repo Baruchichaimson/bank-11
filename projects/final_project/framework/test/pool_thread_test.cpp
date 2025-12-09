@@ -2,7 +2,7 @@
 Exercise: thread pool
 Date: 03/12/2025
 Developer: Baruch Haimson
-Reviewer: 
+Reviewer: Guy
 Status:	waiting
 **************************************/
 

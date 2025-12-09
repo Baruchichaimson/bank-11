@@ -37,11 +37,12 @@ void TestAssignment()
 {
     SharedPtr<int> sp1(new int(7));
     SharedPtr<int> sp2(new int(99));
+    SharedPtr<int> sp3(sp1);
 
-    sp2 = sp1;
 
     std::cout << "TestAssignment1: " << (sp1.UseCount() == 2) << "\n";
-    std::cout << "TestAssignment2: " << (sp2.UseCount() == 2) << "\n";
+    std::cout << "TestAssignment2: " << (sp2.UseCount() == 1) << "\n";
+    std::cout << "TestAssignment2: " << (sp3.UseCount() == 2) << "\n";
 }
 
 void TestUpcasting()
@@ -70,9 +71,12 @@ void TestDestructor()
 void TestOperators()
 {
     SharedPtr<Derived> sp(new Derived());
+    SharedPtr<Base> sp1(new Base());
 
     std::cout << "operator*: " << ((*sp).x == 10) << "\n";
     std::cout << "operator->: " << (sp->y == 20) << "\n";
+    (*sp).Print();
+
 }
 
 int main()

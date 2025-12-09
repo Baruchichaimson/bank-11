@@ -42,7 +42,7 @@ namespace ilrd
             Release();
         }
 
-        SharedPtr& operator=(SharedPtr other) 
+        SharedPtr& operator=(SharedPtr& other) 
         {
             if (this != &other)
             {

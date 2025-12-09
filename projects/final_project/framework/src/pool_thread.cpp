@@ -2,7 +2,7 @@
 Exercise: thread pool
 Date: 03/12/2025
 Developer: Baruch Haimson
-Reviewer: 
+Reviewer: Guy
 Status:	waiting
 **************************************/
 
@@ -11,15 +11,14 @@ Status:	waiting
 namespace ilrd
 {
 
-ThreadPool::WorkerThread::WorkerThread(ThreadPool* pool, TaskWaitableQueue& queue, std::mutex& run_mutex, std::condition_variable& run_cond, bool& is_running)
-    : m_pool(pool), m_queue(queue), m_run_mutex(run_mutex), m_run_cond(run_cond), m_is_running(is_running), m_is_alive(true), m_thread(&WorkerThread::RunThread, this)
+ThreadPool::WorkerThread::WorkerThread(ThreadPool& pool)
+    : m_pool(pool), m_is_alive(true), m_thread(&WorkerThread::RunThread, this)
 {
 }
 
 ThreadPool::WorkerThread::~WorkerThread()
 {
     SetAlive(false);
-    m_run_cond.notify_all();
 
     if (m_thread.joinable())
     {
@@ -37,10 +36,42 @@ bool ThreadPool::WorkerThread::IsAlive() const
     return m_is_alive;
 }
 
+void ThreadPool::WorkerThread::WaitIfPaused()
+{
+    std::unique_lock<std::mutex> lock(m_pool.m_run_mutex);
+
+    while (!m_pool.m_is_running && IsAlive())
+    {
+        m_pool.m_run_cond.wait(lock);
+    }
+    if (!IsAlive()) 
+    { 
+        return; 
+    }
+}
+
 void ThreadPool::WorkerThread::RunThread()
 {
-    m_pool->WorkerLoop(this);
+    TaskEntry entry;
+
+    while (IsAlive())
+    {
+        WaitIfPaused();
+
+        bool got = m_pool.m_tasks.pop(&entry, std::chrono::milliseconds(100));
+
+        if (!got)
+        {
+            continue;
+        }
+
+        WaitIfPaused();
+
+        entry.second->Execute();
+    }
 }
+
+//================ThreadPool===================
 
 ThreadPool::ThreadPool(std::size_t num_threads): m_is_running(true)
 {
@@ -48,11 +79,11 @@ ThreadPool::ThreadPool(std::size_t num_threads): m_is_running(true)
 
     for (std::size_t i = 0; i < num_threads; ++i)
     {
-        m_threads.emplace_back(std::make_unique<WorkerThread>(this, m_tasks, m_run_mutex, m_run_cond, m_is_running));
+        m_threads.emplace_back(std::make_unique<WorkerThread>(*this));
     }
 }
 
-ThreadPool::~ThreadPool()
+ThreadPool::~ThreadPool() noexcept
 {
     Stop();
 }
@@ -76,19 +107,16 @@ void ThreadPool::Resume()
 
 void ThreadPool::Stop()
 {
-    if (!m_is_running)
-        return;
+    TaskEntry task;
 
-    m_is_running = false;
+    Pause();
 
-    for (size_t i = 0; i < m_threads.size(); ++i)
+    SetNumOfThreads(0);
+
+    while(!m_tasks.empty())
     {
-        m_threads[i]->SetAlive(false);
+        m_tasks.pop(&task);
     }
-
-    m_run_cond.notify_all();
-
-    m_threads.clear();   
 }
 
 void ThreadPool::SetNumOfThreads(std::size_t new_count)
@@ -100,7 +128,7 @@ void ThreadPool::SetNumOfThreads(std::size_t new_count)
     {
         for (std::size_t i = 0; i < new_count - current; ++i)
         {
-            m_threads.emplace_back(std::make_unique<WorkerThread>(this, m_tasks, m_run_mutex, m_run_cond, m_is_running));
+            m_threads.emplace_back(std::make_unique<WorkerThread>(*this));
         }
     }
     else if (new_count < current)
@@ -113,45 +141,6 @@ void ThreadPool::SetNumOfThreads(std::size_t new_count)
         m_run_cond.notify_all();
 
         m_threads.erase(m_threads.begin(), m_threads.begin() + remove_count);
-    }
-}
-
-void ThreadPool::WaitIfPaused(WorkerThread* self)
-{
-    std::unique_lock<std::mutex> lock(m_run_mutex);
-
-    while (!m_is_running && self->IsAlive())
-    {
-        m_run_cond.wait(lock);
-    }
-}
-
-void ThreadPool::WorkerLoop(WorkerThread* self)
-{
-    TaskEntry entry;
-
-    while (self->IsAlive())
-    {
-        WaitIfPaused(self);
-        if (!self->IsAlive()) 
-        { 
-            return; 
-        }
-
-        bool got = m_tasks.pop(&entry, std::chrono::milliseconds(100));
-
-        if (!got)
-        {
-            continue;
-        }
-
-        WaitIfPaused(self);
-        if (!self->IsAlive()) 
-        { 
-            return; 
-        }
-
-        entry.second->Execute();
     }
 }
 
