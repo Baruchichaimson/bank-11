@@ -9,55 +9,9 @@
 namespace ilrd
 {
 
-static const char* LogLevelToString(Logger::LogLevel level)
-{
-    switch (level)
-    {
-        case Logger::ERROR:
-           return "ERROR";
+static std::string GetTimestamp();
+static const char* LogLevelToString(Logger::LogLevel level);
 
-        case Logger::WARNING:
-           return "WARNING";
-
-        case Logger::DEBUG:
-           return "DEBUG";
-
-        case Logger::INFO:
-           return "INFO";
-           
-        default:
-           return "UNKNOWN";
-    }
-}
-
-static std::string GetTimestamp()
-{
-    using namespace std::chrono;
-
-    auto now = system_clock::now();
-    std::time_t t = system_clock::to_time_t(now);
-    std::tm tm_snapshot;
-
-#if defined(_WIN32) || defined(_WIN64)
-    localtime_s(&tm_snapshot, &t);
-#else
-    localtime_r(&t, &tm_snapshot);
-#endif
-
-    std::ostringstream oss;
-    oss << std::setfill('0')
-        << std::setw(2) << tm_snapshot.tm_mday
-        << std::setw(2) << (tm_snapshot.tm_mon + 1)
-        << std::setw(4) << (tm_snapshot.tm_year + 1900)
-        << ':'
-        << std::setw(2) << tm_snapshot.tm_hour
-        << ':'
-        << std::setw(2) << tm_snapshot.tm_min
-        << ':'
-        << std::setw(2) << tm_snapshot.tm_sec;
-
-    return oss.str();
-}
 
 /* ---------------- Logger implementation ---------------- */
 
@@ -67,9 +21,7 @@ Logger::Logger()
     m_file.open(m_log_path, std::ios::app);
     if (!m_file.is_open())
     {
-        
-        m_file.clear();
-        m_file.open(m_log_path, std::ios::out | std::ios::trunc);
+        std::cerr << "Error opening log file." << std::endl;
     }
 
     m_writer = std::thread([this]() { this->WriteToFile(); });
@@ -134,6 +86,56 @@ ssize_t Logger::WriteToFile()
     }
 
     return 0;
+}
+
+static const char* LogLevelToString(Logger::LogLevel level)
+{
+    switch (level)
+    {
+        case Logger::ERROR:
+           return "ERROR";
+
+        case Logger::WARNING:
+           return "WARNING";
+
+        case Logger::DEBUG:
+           return "DEBUG";
+
+        case Logger::INFO:
+           return "INFO";
+           
+        default:
+           return "UNKNOWN";
+    }
+}
+
+static std::string GetTimestamp()
+{
+    using namespace std::chrono;
+
+    auto now = system_clock::now();
+    std::time_t t = system_clock::to_time_t(now);
+    std::tm tm_snapshot;
+
+#if defined(_WIN32) || defined(_WIN64)
+    localtime_s(&tm_snapshot, &t);
+#else
+    localtime_r(&t, &tm_snapshot);
+#endif
+
+    std::ostringstream oss;
+    oss << std::setfill('0')
+        << std::setw(2) << tm_snapshot.tm_mday
+        << std::setw(2) << (tm_snapshot.tm_mon + 1)
+        << std::setw(4) << (tm_snapshot.tm_year + 1900)
+        << ':'
+        << std::setw(2) << tm_snapshot.tm_hour
+        << ':'
+        << std::setw(2) << tm_snapshot.tm_min
+        << ':'
+        << std::setw(2) << tm_snapshot.tm_sec;
+
+    return oss.str();
 }
 
 } // namespace ilrd

@@ -52,7 +52,7 @@ private:
 
 #define LOG(msg, level) (logger.Log(std::string(msg), static_cast<enum ilrd::Logger::LogLevel>((level)),__FILE__,__LINE__ ))
 
-static const std::string m_log_path = "/home/baruch/git/projects/final_project/framework/log_file.txt";
+static const std::string m_log_path = "./log_file.txt";
 } // ilrd
 
 #endif // __ILRD_LOGGER__
