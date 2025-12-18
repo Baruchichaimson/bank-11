@@ -8,6 +8,14 @@
 #include "waitable_queue.hpp"
 #include "handleton.hpp"
 
+#define LOG_INFO(MSG) ((ilrd::Handleton<ilrd::Logger>::GetInstance()).Log((MSG), (ilrd::Logger::LogLevel::INFO), (__FILE__), (__LINE__)))
+#ifndef NDEBUG
+#define LOG_DEBUG(MSG) ((ilrd::Handleton<ilrd::Logger>::GetInstance()).Log((MSG), (ilrd::Logger::LogLevel::DEBUG), (__FILE__), (__LINE__)))
+#else
+#define LOG_DEBUG(MSG) do {} while (0)
+#endif
+
+
 namespace ilrd
 {
 class Logger

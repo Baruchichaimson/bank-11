@@ -30,7 +30,6 @@ namespace ilrd
         WaitableQueue() = default;
         
         void push(const T& value);
-        void push(T&& value);
         void pop(T* value);
         bool pop(T* value, std::chrono::milliseconds timeout);
         bool empty() const;
@@ -52,16 +51,6 @@ namespace ilrd
     {
         std::lock_guard<std::recursive_timed_mutex> lock(m_mutex);
         m_queue.push(value);
-        m_cond_var.notify_one();
-    }
-
-    template<typename T, typename Container>
-    void WaitableQueue<T, Container>::push(T&& value)
-    {
-        {
-            std::lock_guard<std::recursive_timed_mutex> lock(m_mutex);
-            m_queue.push(std::move(value));
-        }
         m_cond_var.notify_one();
     }
 

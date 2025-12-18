@@ -143,7 +143,7 @@ template <typename EVENT>
 void Dispatcher<EVENT>::Broadcast(const EVENT& event)
 {
     std::unordered_set<BaseCallback<EVENT>*> callbacks_copy(m_callbacks);
-    std::for_each(callbacks_copy.begin(), callbacks_copy.end(), [&](BaseCallback<EVENT>* callback){ callback->Notify(event);});
+    std::for_each(callbacks_copy.begin(), callbacks_copy.end(), [&event](BaseCallback<EVENT>* callback){ callback->Notify(event);});
 }
 
 /************************ Callback ************************************** */

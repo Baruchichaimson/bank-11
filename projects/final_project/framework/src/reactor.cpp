@@ -1,7 +1,11 @@
-#include <atomic>
-#include <thread>
-#include <chrono>
-#include <memory>
+/**************************************
+Exercise: 	final project - reactor
+Date:		16/12/2025
+Developer:	baruch haimson
+Reviewer: 	
+Status:		
+**************************************/
+#include <stdexcept> // std::runtime_error
 
 #include "reactor.hpp"
 
@@ -14,23 +18,31 @@ Reactor::Reactor(const std::shared_ptr<IListener> listener)
 {
 }
 
-void Reactor::Add(int fd, std::function<void(int, Mode)> callback)
+void Reactor::Add(int fd, Mode mode, std::function<void(int, Mode)> callback)
 {
-    fd_pair key(fd, READ);
+    fd_pair key(fd, mode);
     m_callbacks[key] = callback;
 }
 
 void Reactor::Remove(int fd, Mode mode)
 {
     fd_pair key(fd, mode);
-    m_callbacks.erase(key);
+    if (m_callbacks.find(key) != m_callbacks.end())
+    {
+        m_callbacks.erase(key);
+    }
 }
 
 void Reactor::Run()
 {
-    m_is_running.store(true);
+    if (m_is_running)
+    {
+        throw std::runtime_error("reactor is already running");
+    }
 
-    while (m_is_running.load())
+    m_is_running = true;
+
+    while (m_is_running && !m_callbacks.empty())
     {
         std::vector<fd_pair> fds;
         fds.reserve(m_callbacks.size());
@@ -42,17 +54,20 @@ void Reactor::Run()
 
         if (fds.empty())
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            continue;
+            break;
         }
 
-        /* Blocking listen */
-        std::vector<fd_pair> ready =
-            m_listener->Listen(fds);
+        fds = m_listener->Listen(fds);
 
-        for (const auto& fd : ready)
+        for (const auto& fd : fds)
         {
+            if (!m_is_running)
+            {
+                break;
+            }
+
             auto it = m_callbacks.find(fd);
+
             if (it != m_callbacks.end())
             {
                 it->second(fd.first, fd.second);
@@ -63,7 +78,7 @@ void Reactor::Run()
 
 void Reactor::Stop()
 {
-    m_is_running.store(false);
+    m_is_running = false;
 }
 
 } // namespace ilrd

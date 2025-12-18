@@ -11,13 +11,13 @@ namespace ilrd
     public:
         using pq_t = std::priority_queue<T, Container, Compare>;
 
-        bool Empty() const { return m_pq.empty(); }
-        size_t Size() const { return m_pq.size(); }
+        bool empty() const { return m_pq.empty(); }
+        size_t size() const { return m_pq.size(); }
 
-        const T& Front() const { return m_pq.top(); }
+        const T& front() const { return m_pq.top(); }
 
-        void Push(const T& value) { m_pq.push(value); }
-        void Pop() { m_pq.pop(); }
+        void push(const T& value) { m_pq.push(value); }
+        void pop() { m_pq.pop(); }
 
     private:
         pq_t m_pq;

@@ -11,10 +11,12 @@ g++ -shared -o libhandleton.so src/handleton.o
 
 #include "singleton.hpp"
 #include "logger.hpp"
+#include "scheduler.hpp"
 
 namespace ilrd
 {
     // Explicit instantiations so the symbols live in libhandleton.so
     template class Singleton<int>;
-    template class Singleton<Logger>;
+    //template class Singleton<Logger>;
+    template class Singleton<Scheduler>;
 }
