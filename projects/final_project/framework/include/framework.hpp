@@ -18,6 +18,7 @@ Status:
 #include "reactor.hpp"
 #include "inputmediator.hpp"
 #include "dirmonitor.hpp"
+#include "dllloader.hpp"
 #include "icommand.hpp"
 
 namespace ilrd
@@ -42,6 +43,9 @@ public:
 private:
     InputMediator m_mediator;
     DirMonitor m_dir_monitor;
+    DllLoader m_loader;
+    Callback<const std::string&, DllLoader> m_cb;
+
 }; // class FrameWork
 
 } // ilrd

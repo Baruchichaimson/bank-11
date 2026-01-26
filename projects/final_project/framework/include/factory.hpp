@@ -6,6 +6,7 @@
 #include <memory> // std::shared_ptr
 #include <stdexcept> // std::out_of_range
 
+#include "logger.hpp"
 
 namespace ilrd
 {
@@ -36,18 +37,23 @@ private:
 template<typename BASE, typename KEY, typename... ARGS>     
 void Factory< BASE,  KEY, ARGS...>::Add(KEY key, CTOR ctor) noexcept
 {
+    LOG_DEBUG("Factory::Add entered");
     m_map[key] = ctor;
+    LOG_DEBUG("Factory::Add exit");
 }
 
 template<typename BASE, typename KEY, typename... ARGS>     
 typename Factory< BASE,  KEY, ARGS...>::BASE_PTR Factory< BASE,  KEY, ARGS...>::Create(KEY key, ARGS... args)
 {
+    LOG_DEBUG("Factory::Create entered");
     auto iter = m_map.find(key);
     if (iter == m_map.end())
     {
         throw std::out_of_range("Factory: key not found");
     }
-    return iter->second(std::forward<ARGS>(args)...);
+    auto result = iter->second(std::forward<ARGS>(args)...);
+    LOG_DEBUG("Factory::Create exit");
+    return result;
 }
 
 

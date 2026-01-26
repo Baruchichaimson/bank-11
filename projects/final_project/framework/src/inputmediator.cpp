@@ -21,15 +21,8 @@ InputMediator::InputMediator(const std::vector<std::tuple<int, Reactor::Mode, in
 {
     LOG_DEBUG("InputMediator ctor entered");
 
-    for (const auto& reg : registrations)
+    for (const auto& [fd, mode, proxy] : registrations)
     {
-        int fd;
-        Reactor::Mode mode;
-        input_proxy_t proxy;
-
-        std::tie(fd, mode, proxy) = reg;
-
-
         m_reactor.Add(fd, mode, ReactorCallback(proxy));
     }
     LOG_DEBUG("InputMediator ctor exit");
@@ -95,10 +88,9 @@ void InputMediator::ReactorCallback::operator()(int fd, Reactor::Mode mode)
         LOG_DEBUG("ReactorCallback::operator() exit - no args");
         return;
     }
-
-    auto task = std::make_shared<TPTask>(args);
-    auto& pool = Handleton<ThreadPool>::GetInstance();
-    pool.Add(task);
+   
+    Handleton<ThreadPool>::GetInstance().Add(std::make_shared<TPTask>(args));
+    
     LOG_DEBUG("ReactorCallback::operator() exit");
 }
 }

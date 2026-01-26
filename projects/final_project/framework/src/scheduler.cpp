@@ -12,12 +12,14 @@
 #include <chrono>
 
 #include "scheduler.hpp"
+#include "logger.hpp"
 
 namespace ilrd
 { 
 
 timer_t Scheduler::CreateTimer()
 {
+    LOG_DEBUG("Scheduler::CreateTimer entered");
     struct sigevent sev;
     std::memset(&sev, 0, sizeof(sev));
 
@@ -31,6 +33,7 @@ timer_t Scheduler::CreateTimer()
         throw std::runtime_error("timer_create failed");
     }
 
+    LOG_DEBUG("Scheduler::CreateTimer exit");
     return timer;
 }
 /* ----------------------------------------- */
@@ -38,26 +41,33 @@ timer_t Scheduler::CreateTimer()
 Scheduler::Scheduler()
     : m_timer(CreateTimer())
 {
+    LOG_DEBUG("Scheduler ctor entered");
+    LOG_DEBUG("Scheduler ctor exit");
 }
 
 Scheduler::~Scheduler() noexcept(false) 
 {
+    LOG_DEBUG("Scheduler dtor entered");
     if (timer_delete(m_timer) == -1)
     {
         throw std::runtime_error("timer_delete failed");
     }
+    LOG_DEBUG("Scheduler dtor exit");
 }
 
 void Scheduler::Add(std::shared_ptr<ISTask> task, const std::chrono::milliseconds delay)
 {
+    LOG_DEBUG("Scheduler::Add entered");
     auto exec_time = std::chrono::steady_clock::now() + delay;
     m_queue.push({task, exec_time});
     
     SetTimer(exec_time);
+    LOG_DEBUG("Scheduler::Add exit");
 }
 
 void Scheduler::SetTimer(TimePoint exec_time)
 {
+    LOG_DEBUG("Scheduler::SetTimer entered");
     auto now = std::chrono::steady_clock::now();
     auto delay = exec_time - now;
     
@@ -79,10 +89,12 @@ void Scheduler::SetTimer(TimePoint exec_time)
         throw std::runtime_error("timer_settime failed");
     }
 
+    LOG_DEBUG("Scheduler::SetTimer exit");
 }
 
 void Scheduler::TimerCallback(union sigval sv)
 {
+    LOG_DEBUG("Scheduler::TimerCallback entered");
     std::cout << "TimerCallback: started" << std::endl;
     
     Scheduler* sched = static_cast<Scheduler*>(sv.sival_ptr);
@@ -105,6 +117,7 @@ void Scheduler::TimerCallback(union sigval sv)
     {
         sched->m_queue.push(t);
         sched->SetTimer(t.second);
+        LOG_DEBUG("Scheduler::TimerCallback exit");
         return;
     }
     
@@ -115,6 +128,7 @@ void Scheduler::TimerCallback(union sigval sv)
         sched->m_queue.push(next);
         sched->SetTimer(nextTime);
     }
+    LOG_DEBUG("Scheduler::TimerCallback exit");
 }
 
 } // namespace ilrd

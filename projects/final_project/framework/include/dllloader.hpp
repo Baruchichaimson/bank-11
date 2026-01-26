@@ -15,6 +15,7 @@ public:
 
     void* Load(const std::string& plugin_name);
     void LoadCallback(const std::string& plugin_name);
+    void Cleanup();
 
 private:
 };

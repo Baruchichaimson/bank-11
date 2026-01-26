@@ -33,22 +33,19 @@ ThreadPool::WorkerThread::~WorkerThread()
 
 void ThreadPool::WorkerThread::SetAlive(bool value)
 {
-    LOG_DEBUG("WorkerThread::SetAlive entered");
+    LOG_DEBUG("WorkerThread::SetAlive entered" + std::to_string(value));
     m_is_alive = value;
     LOG_DEBUG("WorkerThread::SetAlive exit");
 }
 
 bool ThreadPool::WorkerThread::IsAlive() const
 {
-    LOG_DEBUG("WorkerThread::IsAlive entered");
     bool alive = m_is_alive;
-    LOG_DEBUG(alive ? "WorkerThread::IsAlive exit - true" : "WorkerThread::IsAlive exit - false");
     return alive;
 }
 
 void ThreadPool::WorkerThread::WaitIfPaused()
 {
-    LOG_DEBUG("WorkerThread::WaitIfPaused entered");
     std::unique_lock<std::mutex> lock(m_pool.m_run_mutex);
 
     while (!m_pool.m_is_running && IsAlive())
@@ -60,7 +57,6 @@ void ThreadPool::WorkerThread::WaitIfPaused()
         LOG_DEBUG("WorkerThread::WaitIfPaused exit - not alive");
         return; 
     }
-    LOG_DEBUG("WorkerThread::WaitIfPaused exit");
 }
 
 void ThreadPool::WorkerThread::RunThread()

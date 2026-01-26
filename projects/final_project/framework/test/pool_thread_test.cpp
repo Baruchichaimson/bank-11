@@ -6,99 +6,153 @@ Reviewer: Guy
 Status:	waiting
 **************************************/
 
-#include <iostream> // printf
-#include <memory>   // make_shared
-#include <chrono>   // milliseconds
-#include <thread>   // sleep_for
+/* g++ -std=c++20 -Wall -Wextra -pthread -Iinclude src/thread_pool.cpp src/logger.cpp src/handleton.cpp src/scheduler.cpp test/pool_thread_test.cpp */
 
-#include "pool_thread.hpp" // ThreadPool
+#include <iostream>     // std::cout
+#include <unistd.h>     // sleep
+#include <memory>       // std::make_shared
+#include <iostream>
+#include <unistd.h>
+#include <memory>
+
+#include "thread_pool.hpp" // ThreadPool
 
 using namespace ilrd;
 
-// ----- Example Task -----
-class PrintTask : public ThreadPool::ITPTask
+class TPTaskPrint : public ThreadPool::ITPTask
 {
 public:
-    explicit PrintTask(int n)
-        : m_n(n)
-    {}
-
+    TPTaskPrint(const std::string& msg) : m_msg(msg) {}
     void Execute() override
     {
-        std::cout << "Executing task: " << m_n
-                << "  (Thread: " << std::this_thread::get_id() << ")\n";
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::cout << m_msg << std::endl;
     }
 
 private:
-    int m_n;
+    std::string m_msg;
 };
+
+inline ThreadPool::task MakeTask(const std::string& msg,
+                                 ThreadPool::Priority pr = ThreadPool::MEDIUM)
+{
+    return std::make_pair(std::make_shared<TPTaskPrint>(msg), pr);
+}
+
+void BasicRunTest();
+void ResizeTest();
+void PauseResumeTest();
+void StopTest();
 
 int main()
 {
-    std::cout << "Creating thread pool with 3 threads...\n";
+    std::cout << "***** ThreadPool Test Start *****" << std::endl;
 
-    ThreadPool pool(3);
+    BasicRunTest();
+    ResizeTest();
+    PauseResumeTest();
+    StopTest();
 
-    std::cout << "Adding 10 tasks...\n";
-
-    for (int i = 1; i <= 10; ++i)
-    {
-        pool.Add(std::make_shared<PrintTask>(i), ThreadPool::MEDIUM);
-    }
-
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-
-
-    std::cout << "\nIncreasing threads to 5...\n";
-
-    pool.SetNumOfThreads(5);
-
-    for (int i = 11; i <= 20; ++i)
-    {
-        pool.Add(std::make_shared<PrintTask>(i), ThreadPool::LOW);
-    }
-
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-
-
-    std::cout << "\nPausing pool...\n";
-    pool.Pause();
-
-    std::cout << "Pool paused. Adding tasks (#21-#25)...\n";
-
-    for (int i = 21; i <= 25; ++i)
-    {
-        pool.Add(std::make_shared<PrintTask>(i), ThreadPool::LOW);
-    }
-
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-
-
-    std::cout << "\nResuming pool...\n";
-    pool.Resume();
-
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-
-
-    std::cout << "\nDecreasing threads to 2...\n";
-    pool.SetNumOfThreads(2);
-
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-
-
-    for (int i = 26; i <= 30; ++i)
-    {
-        pool.Add(std::make_shared<PrintTask>(i), ThreadPool::HIGH);
-    }
-
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-
-    std::cout << "\nStopping pool...\n";
-    pool.Stop();
-
-    std::cout << "Thread pool stopped cleanly.\n";
+    std::cout << "\n***** Great Success!!! *****" << std::endl;
 
     return 0;
 }
+
+/***************************
+        TESTS
+****************************/
+
+void BasicRunTest()
+{
+    std::cout << "\n--- BasicRunTest ---" << std::endl;
+
+    ThreadPool tp(2);
+    tp.Run();
+    
+    tp.Add(MakeTask("Hello from TP!"));
+    tp.Add(MakeTask("Task #2"));
+    tp.Add(MakeTask("Task #3"));
+
+    sleep(1);
+}
+
+void ResizeTest()
+{
+    std::cout << "\n--- ResizeTest ---" << std::endl;
+
+    ThreadPool tp(2);
+    tp.Run();
+
+    std::cout << "Adding tasks before resize..." << std::endl;
+    for (int i = 0; i < 5; ++i)
+    {
+        tp.Add(MakeTask("Before resize #" + std::to_string(i)));
+    }
+
+    sleep(1);
+
+    std::cout << "Resizing to 4 threads..." << std::endl;
+    tp.SetNumOfThreads(4);
+
+    for (int i = 0; i < 5; ++i)
+    {
+        tp.Add(MakeTask("After grow #" + std::to_string(i)));
+    }
+
+    sleep(1);
+
+    std::cout << "Resizing to 1 thread..." << std::endl;
+    tp.SetNumOfThreads(1);
+
+    tp.Add(MakeTask("After shrink (1 thread left)"));
+
+    sleep(1);
+}
+
+void PauseResumeTest()
+{
+    std::cout << "\n--- PauseResumeTest ---" << std::endl;
+
+    ThreadPool tp(3);
+    tp.Run();
+
+    tp.Add(MakeTask("Task 1"));
+    tp.Add(MakeTask("Task 2"));
+    tp.Add(MakeTask("Task 3"));
+
+    sleep(1);
+
+    std::cout << "Pausing..." << std::endl;
+    tp.Pause();
+
+    tp.Add(MakeTask("This waits until resume"));
+    tp.Add(MakeTask("This too"));
+
+    std::cout << "Resuming..." << std::endl;
+    tp.Run();
+
+    sleep(1);
+}
+
+void StopTest()
+{
+    std::cout << "\n--- StopTest ---" << std::endl;
+
+    ThreadPool tp(3);
+    tp.Run();
+
+    tp.Add(MakeTask("Final #1"));
+    tp.Add(MakeTask("Final #2"));
+    tp.Add(MakeTask("Final #3"));
+
+    sleep(1);
+
+    std::cout << "Stopping..." << std::endl;
+    tp.Stop();
+
+    tp.Add(MakeTask("Final #1"));
+    tp.Add(MakeTask("Final #2"));
+    tp.Add(MakeTask("Final #3"));
+
+    std::cout << "ThreadPool stopped successfully." << std::endl;
+}
+

@@ -88,7 +88,7 @@ public:
         (void)task_args;
         std::cout << "[StubReadCommand] Execute called!" << std::endl;
 
-        return {[]() { return true; }, std::chrono::milliseconds(0)};
+        return {[]() { LOG_INFO("mession"); return true; }, std::chrono::milliseconds(0)};
     }
 };
 
@@ -104,23 +104,6 @@ public:
     }
 };
 
-// ====================== Helper Test ======================
-
-static size_t g_test_num = 0;
-template <typename T>
-void PrintTest(const std::string& test_name, const T& result, const T& expected)
-{
-    std::cout << "Test " << ++g_test_num << " - " << test_name << ": ";
-    if (result == expected)
-    {
-        std::cout << "PASSED" << std::endl;
-    }
-    else
-    {
-        std::cout << "FAILED (expected: " << expected << ", got: " << result << ")" << std::endl;
-    }
-}
-
 // ====================== MAIN ======================
 int main()
 {    
@@ -134,6 +117,7 @@ int main()
     };
 
     auto listener = std::make_shared<SelectListener>();
+
     auto proxy = std::make_shared<NDBPoxy>();
 
     std::vector<FrameWork::CallBacks> entries =
@@ -145,6 +129,7 @@ int main()
     std::filesystem::create_directories(plugin_dir);
 
     FrameWork fw(entries, listener, commands, plugin_dir);
+
     g_framework = &fw;
 
     std::cout << "Type something and press Enter (type 'quit' to exit):" << std::endl;
@@ -154,6 +139,7 @@ int main()
     Handleton<ThreadPool>::GetInstance().Stop();
 
     std::cout << "=== Test End ===" << std::endl;
+    
     LOG_INFO("================================ Test End ================================");
 
 

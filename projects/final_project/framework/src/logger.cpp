@@ -16,7 +16,7 @@ static const char* LogLevelToString(Logger::LogLevel level);
 /* ---------------- Logger implementation ---------------- */
 
 Logger::Logger()
-: m_is_alive(true), m_curr_level(DEBUG)
+: m_is_alive(true), m_curr_level(INFO)
 {
     m_file.open(m_log_path, std::ios::app);
     if (!m_file.is_open())
