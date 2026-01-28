@@ -19,7 +19,6 @@
 !*.hpp
 !*.js
 
-!node_modules
 !.env
 !.env.*
 !npm-debug.log
