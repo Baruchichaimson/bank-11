@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome Page</title>
+</head>
+<body>
+
+<h2>Welcome App</h2>
+
+<input type="text" id="nameInput" placeholder="Enter your name">
+<button id="welcomeBtn">Say Welcome</button>
+
+<div id="messages"></div>
+
+<!-- Inner button demo -->
+<button id="outerBtn" onclick="outerClick()">
+    Outer Button
+    <button id="innerBtn" onclick="innerClick(event)">Inner Button</button>
+</button>
+
+<script>
+    // Storage demo
+    const input = document.getElementById("nameInput");
+    const btn = document.getElementById("welcomeBtn");
+    const messages = document.getElementById("messages");
+
+    // Load last name from localStorage
+    input.value = localStorage.getItem("lastName") || "";
+
+    btn.addEventListener("click", () => {
+        const name = input.value;
+        if(!name) return;
+
+        // Display welcome message
+        const msg = document.createElement("p"); // domיוצר אלמנט  בתוך ה
+        msg.textContent = `Welcome, ${name}!`; // מכניס את התוכן לתוך המחרוזת
+        messages.appendChild(msg); // יוצר את האלמנט בזמן אמת בתוף הדף
+
+        // Save to localStorage and sessionStorage
+        localStorage.setItem("lastName", name);
+        sessionStorage.setItem("lastName", name);
+    });
+
+    // Inner/Outer button clicks
+    function innerClick(event) {
+        alert("Inner button clicked!");
+        event.stopPropagation(); // Prevent outer click לא מפעיל גם את האירוע שמעליו כי זה קורה אוטמטית בגלל bubble
+    }
+
+    function outerClick() {
+        alert("Outer button clicked!");
+    }
+</script>
+
+</body>
+</html>

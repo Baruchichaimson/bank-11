@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>BroadcastChannel Demo</title>
+  </head>
+  <body>
+    <h1>BroadcastChannel Demo</h1>
+    <button id="sendBtn">Send message</button>
+    <p id="output"></p>
+
+    <script>
+      const channel = new BroadcastChannel("my_channel");
+
+      const output = document.getElementById("output");
+      const button = document.getElementById("sendBtn");
+
+      button.addEventListener("click", () => {
+        channel.postMessage("Hello from this tab!");
+      });
+
+      channel.onmessage = (event) => {
+        output.textContent = "Received: " + event.data;
+      };
+    </script>
+  </body>
+</html>

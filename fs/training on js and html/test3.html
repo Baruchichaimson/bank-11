@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f0f0; }
+        .login-container { background: rgb(34, 7, 130); padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.2); text-align: center; width: 300px; }
+        .login-container img { width: 100px; margin-bottom: 10px; }
+        .login-container input { width: 90%; padding: 8px; margin: 5px 0; border-radius: 5px; border: 1px solid #ccc; }
+        .login-container button { width: 95%; padding: 10px; margin-top: 10px; border: none; border-radius: 5px; background-color: #007BFF; color: white; cursor: pointer; }
+        .login-container button:hover { background-color: #0cb300; }
+        .login-container .loginBtn2  { background-color: #0cb300; width: 95%; padding: 10px; margin-top: 10px; border: none; }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <img src="https://via.placeholder.com/100" alt="Login Image">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button class="loginBtn2">Login</button>
+    <button> Login</button>
+    
+</div>
+
+<script>
+    const loginBtn = document.getElementById("loginBtn");
+    loginBtn.addEventListener("click", () => {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        if(username && password) {
+            alert(`Welcome, ${username}!`);
+        } else {
+            alert("Please enter username and password.");
+        }
+    });
+</script>
+
+</body>
+</html>
